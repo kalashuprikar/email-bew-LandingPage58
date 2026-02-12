@@ -96,6 +96,13 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
         onBlockSelect(block.id);
         setIsBlockSelected(true);
       }}
+      onClickCapture={(e) => {
+        // Keep block selected even when clicking on editable content
+        if (!isBlockSelected) {
+          onBlockSelect(block.id);
+          setIsBlockSelected(true);
+        }
+      }}
     >
       <BlockRenderer
         block={block}
