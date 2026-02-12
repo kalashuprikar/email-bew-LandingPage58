@@ -180,11 +180,17 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
                       }}
                     >
                       <div className={cn(
-                        "flex w-full transition-all rounded-lg",
+                        "w-full transition-all rounded-lg",
                         isGroupHovered && !isGroupSelected ? "border-2 border-dashed border-valasys-orange" : "border-2 border-solid border-valasys-orange"
-                      )}>
+                      )}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "0",
+                      }}>
                         {inlineBlocks.map((inlineBlock, i) => (
-                          <div key={inlineBlock.id} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                          <div key={inlineBlock.id} className="w-full" onClick={(e) => e.stopPropagation()}>
                             <DraggableBlock
                               block={inlineBlock}
                               index={index + i}

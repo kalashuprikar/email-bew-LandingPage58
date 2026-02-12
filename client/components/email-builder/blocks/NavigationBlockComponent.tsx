@@ -12,7 +12,7 @@ export const NavigationBlockComponent: React.FC<
 > = ({ block, isSelected }) => {
   const isInlineDisplay = (block as any).displayMode === "inline";
 
-  // Inline display - render as horizontal links without full width background
+  // Inline display - render as horizontal centered links with dark background
   if (isInlineDisplay) {
     return (
       <div
@@ -24,12 +24,11 @@ export const NavigationBlockComponent: React.FC<
           margin: `${block.margin}px`,
           display: "flex",
           alignItems: "center",
-          justifyContent: block.alignment === "left" ? "flex-start" : block.alignment === "right" ? "flex-end" : "center",
+          justifyContent: "center",
           gap: "20px",
-          width: "auto",
+          width: "100%",
           backgroundColor: block.backgroundColor,
           borderRadius: "4px",
-          marginLeft: "auto",
         }}
       >
         {block.items.map((item) => (
