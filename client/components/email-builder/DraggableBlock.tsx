@@ -81,14 +81,14 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
         "group relative cursor-move transition-all",
         isDragging && "opacity-50 scale-95",
         isOver && "ring-2 ring-valasys-orange rounded-lg",
+        !isPartOfInlineGroup && isHovering && !isBlockSelected && "border-2 border-dashed border-valasys-orange rounded-lg",
+        !isPartOfInlineGroup && isBlockSelected && "border-2 border-solid border-valasys-orange rounded-lg",
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onClick={(e) => {
         e.stopPropagation();
-        if (isPartOfInlineGroup) {
-          setIsBlockSelected(true);
-        }
+        setIsBlockSelected(!isBlockSelected);
       }}
     >
       <BlockRenderer
@@ -106,16 +106,45 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
         blockIndex={index}
       />
 
-      {!isPartOfInlineGroup && (isSelected || isHovering) && (
+      {!isPartOfInlineGroup && isBlockSelected && (
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 z-[100] transition-all">
-          <BlockActions
-            block={block}
-            blockIndex={index}
-            totalBlocks={totalBlocks}
-            onAddBlock={onAddBlock}
-            onDuplicate={onDuplicate}
-            onDelete={() => onDelete(block.id)}
-          />
+          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-lg">
+            {/* Copy Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate(block, index + 1);
+                setIsBlockSelected(false);
+              }}
+              type="button"
+              title="Duplicate block"
+            >
+              <Copy className="w-4 h-4 text-gray-700" />
+            </Button>
+
+            {/* Delete Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-red-50 rounded-full"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(block.id);
+                setIsBlockSelected(false);
+              }}
+              type="button"
+              title="Delete block"
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </div>
         </div>
       )}
 
