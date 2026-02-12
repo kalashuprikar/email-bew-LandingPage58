@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDrop } from "react-dnd";
-import { Mail } from "lucide-react";
+import { Mail, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { EmailTemplate, ContentBlock } from "./types";
 import { DraggableBlock } from "./DraggableBlock";
 
@@ -40,6 +41,9 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
   onDuplicateBlock,
   onDeleteBlock,
 }) => {
+  const [hoveredInlineGroup, setHoveredInlineGroup] = useState<string | null>(null);
+  const [selectedInlineGroup, setSelectedInlineGroup] = useState<string | null>(null);
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ["block", "template"],
     drop: (item: any) => {
@@ -159,32 +163,99 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
                     currentIndex++;
                   }
 
+                  const groupId = `inline-group-${block.id}`;
+                  const isGroupSelected = selectedInlineGroup === groupId;
+                  const isGroupHovered = hoveredInlineGroup === groupId;
+
                   return (
-                    <div key={`inline-group-${block.id}`} className="flex w-full">
-                      {inlineBlocks.map((inlineBlock, i) => (
-                        <div key={inlineBlock.id} className="flex-1">
-                          <DraggableBlock
-                            block={inlineBlock}
-                            index={index + i}
-                            totalBlocks={template.blocks.length}
-                            isSelected={selectedBlockId === inlineBlock.id}
-                            isEditing={editingBlockId === inlineBlock.id}
-                            selectedFooterElement={selectedFooterElement}
-                            onBlockUpdate={onBlockUpdate}
-                            onBlockSelect={onBlockSelect}
-                            onEditingBlockChange={onEditingBlockChange}
-                            onFooterElementSelect={onFooterElementSelect}
-                            onMoveBlock={onMoveBlock}
-                            onAddBlock={(newBlock, position) => {
-                              onAddBlock(newBlock, position);
-                            }}
-                            onDuplicate={(blockToDuplicate, position) => {
-                              onDuplicateBlock?.(blockToDuplicate, position);
-                            }}
-                            onDelete={(blockId) => onDeleteBlock?.(blockId)}
-                          />
+                    <div
+                      key={groupId}
+                      className="relative"
+                      onMouseEnter={() => setHoveredInlineGroup(groupId)}
+                      onMouseLeave={() => setHoveredInlineGroup(null)}
+                      onClick={() => setSelectedInlineGroup(groupId)}
+                    >
+                      <div className={cn(
+                        "flex w-full transition-all",
+                        (isGroupSelected || isGroupHovered) && "ring-2 ring-valasys-orange rounded-lg"
+                      )}>
+                        {inlineBlocks.map((inlineBlock, i) => (
+                          <div key={inlineBlock.id} className="flex-1">
+                            <DraggableBlock
+                              block={inlineBlock}
+                              index={index + i}
+                              totalBlocks={template.blocks.length}
+                              isSelected={selectedBlockId === inlineBlock.id}
+                              isEditing={editingBlockId === inlineBlock.id}
+                              selectedFooterElement={selectedFooterElement}
+                              onBlockUpdate={onBlockUpdate}
+                              onBlockSelect={(id) => {
+                                onBlockSelect(id);
+                                setSelectedInlineGroup(null);
+                              }}
+                              onEditingBlockChange={onEditingBlockChange}
+                              onFooterElementSelect={onFooterElementSelect}
+                              onMoveBlock={onMoveBlock}
+                              onAddBlock={(newBlock, position) => {
+                                onAddBlock(newBlock, position);
+                              }}
+                              onDuplicate={(blockToDuplicate, position) => {
+                                onDuplicateBlock?.(blockToDuplicate, position);
+                              }}
+                              onDelete={(blockId) => onDeleteBlock?.(blockId)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Group Actions */}
+                      {(isGroupSelected || isGroupHovered) && (
+                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 z-[100] transition-all">
+                          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-lg">
+                            {/* Duplicate Group */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Duplicate all blocks in the group after the last block
+                                const lastInlineBlockIndex = index + inlineBlocks.length - 1;
+                                inlineBlocks.forEach((block, idx) => {
+                                  onDuplicateBlock?.(block, lastInlineBlockIndex + 1 + idx);
+                                });
+                              }}
+                              type="button"
+                              title="Duplicate section"
+                            >
+                              <Copy className="w-4 h-4 text-gray-700" />
+                            </Button>
+
+                            {/* Delete Group */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-red-50 rounded-full"
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Delete all blocks in the group
+                                inlineBlocks.forEach((block) => {
+                                  onDeleteBlock?.(block.id);
+                                });
+                                setSelectedInlineGroup(null);
+                              }}
+                              type="button"
+                              title="Delete section"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </Button>
+                          </div>
                         </div>
-                      ))}
+                      )}
                     </div>
                   );
                 }
