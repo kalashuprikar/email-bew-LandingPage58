@@ -99,7 +99,6 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
       onMouseLeave={() => setIsHovering(false)}
       onClick={(e) => {
         e.stopPropagation();
-        e.preventDefault();
         onBlockSelect(block.id);
         setIsBlockSelected(true);
       }}

@@ -54,7 +54,6 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    e.preventDefault();
     onBlockSelect?.(block.id);
   };
 
