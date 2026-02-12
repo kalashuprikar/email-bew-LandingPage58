@@ -105,14 +105,14 @@ export const BlockActions: React.FC<BlockActionsProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+    <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-lg whitespace-nowrap">
       {/* Add Block */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-gray-100"
+            className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
             onMouseDown={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
             title="Add new block"
@@ -120,7 +120,7 @@ export const BlockActions: React.FC<BlockActionsProps> = ({
             <Plus className="w-4 h-4 text-gray-700" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
+        <DropdownMenuContent align="center" className="w-48">
           <DropdownMenuItem onClick={() => handleAddBlockType("title")}>
             Title
           </DropdownMenuItem>
@@ -182,13 +182,14 @@ export const BlockActions: React.FC<BlockActionsProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 w-8 p-0 hover:bg-gray-100"
+        className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
         onMouseDown={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           onDuplicate(block, blockIndex + 1);
         }}
+        type="button"
         title="Duplicate block"
       >
         <Copy className="w-4 h-4 text-gray-700" />
@@ -198,13 +199,14 @@ export const BlockActions: React.FC<BlockActionsProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 w-8 p-0 hover:bg-red-100"
+        className="h-8 w-8 p-0 hover:bg-red-50 rounded-full"
         onMouseDown={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           onDelete();
         }}
+        type="button"
         title="Delete block"
       >
         <Trash2 className="w-4 h-4 text-red-600" />

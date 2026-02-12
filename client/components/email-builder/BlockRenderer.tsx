@@ -273,6 +273,11 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           <PromoBlockComponent
             block={block as any}
             isSelected={isSelected}
+            onBlockUpdate={onBlockUpdate}
+            onAddBlock={onAddBlock}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+            blockIndex={blockIndex}
           />
         </div>
       );

@@ -586,9 +586,13 @@ export function createTwoColumnCardBlock() {
 }
 
 export function createPromoBlock(): PromoBlock {
+  const promoTextId = generateId();
+  const promoCodeId = generateId();
   return {
     type: "promo",
     id: generateId(),
+    promoTexts: [{ id: promoTextId, content: "Save 15% on your next order!" }],
+    promoCodes: [{ id: promoCodeId, content: "PROMO15" }],
     promoText: "Save 15% on your next order!",
     promoCode: "PROMO15",
     fontSize: 16,
@@ -917,9 +921,34 @@ export function renderBlockToHTML(block: ContentBlock): string {
         promoBlock.borderWidth > 0
           ? `border: ${promoBlock.borderWidth}px solid ${promoBlock.borderColor};`
           : "";
+
+      const texts =
+        promoBlock.promoTexts ||
+        (promoBlock.promoText
+          ? [{ id: "text-0", content: promoBlock.promoText }]
+          : []);
+      const codes =
+        promoBlock.promoCodes ||
+        (promoBlock.promoCode
+          ? [{ id: "code-0", content: promoBlock.promoCode }]
+          : []);
+
+      const textsHtml = texts
+        .map(
+          (t) =>
+            `<p style="margin: 0 0 12px 0; font-size: ${promoBlock.fontSize}px; color: ${promoBlock.fontColor};">${t.content}</p>`,
+        )
+        .join("");
+      const codesHtml = codes
+        .map(
+          (c) =>
+            `<h2 style="margin: 0; font-size: ${promoBlock.promoCodeFontSize}px; font-weight: ${promoBlock.fontWeight}; color: ${promoBlock.promoCodeColor}; letter-spacing: ${promoBlock.letterSpacing}px;">${c.content}</h2>`,
+        )
+        .join("");
+
       return `<div style="background-color: ${promoBlock.backgroundColor}; padding: ${promoBlock.padding}px; text-align: ${promoBlock.alignment}; border-radius: ${promoBlock.borderRadius}px; margin: ${promoBlock.margin}px auto; width: ${width}; ${borderStyle}">
-        <p style="margin: 0 0 12px 0; font-size: ${promoBlock.fontSize}px; color: ${promoBlock.fontColor};">${promoBlock.promoText}</p>
-        <h2 style="margin: 0; font-size: ${promoBlock.promoCodeFontSize}px; font-weight: ${promoBlock.fontWeight}; color: ${promoBlock.promoCodeColor}; letter-spacing: ${promoBlock.letterSpacing}px;">${promoBlock.promoCode}</h2>
+        ${textsHtml}
+        ${codesHtml}
       </div>`;
     }
     case "twoColumnCard": {

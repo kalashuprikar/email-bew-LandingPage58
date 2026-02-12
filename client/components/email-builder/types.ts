@@ -478,8 +478,10 @@ export interface FeaturesBlock {
 export interface PromoBlock {
   type: "promo";
   id: string;
-  promoText: string;
-  promoCode: string;
+  promoTexts?: { id: string; content: string }[];
+  promoCodes?: { id: string; content: string }[];
+  promoText: string; // Legacy support
+  promoCode: string; // Legacy support
   fontSize: number;
   promoCodeFontSize: number;
   fontColor: string;
