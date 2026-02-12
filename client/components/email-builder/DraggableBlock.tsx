@@ -120,7 +120,7 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
         </div>
       )}
 
-      {isPartOfInlineGroup && (isBlockSelected || isHovering) && (
+      {isPartOfInlineGroup && isBlockSelected && (
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 z-[101] transition-all">
           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-lg">
             {/* Copy Button */}
