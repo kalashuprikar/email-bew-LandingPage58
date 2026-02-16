@@ -373,6 +373,92 @@ export const LandingPageSettingsPanel: React.FC<
           />
         </div>
       </div>
+
+      <div>
+        <Label className="text-sm font-medium">Headline Text Color</Label>
+        <div className="flex gap-2">
+          <Input
+            type="color"
+            value={localProps.headlineColor || "#1f2937"}
+            onChange={(e) => updateProperty("headlineColor", e.target.value)}
+            className="w-12 h-10 p-1 cursor-pointer"
+          />
+          <Input
+            value={localProps.headlineColor || "#1f2937"}
+            onChange={(e) => updateProperty("headlineColor", e.target.value)}
+            placeholder="#1f2937"
+            className="flex-1"
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium">Subheading Text Color</Label>
+        <div className="flex gap-2">
+          <Input
+            type="color"
+            value={localProps.subheadingColor || "#4b5563"}
+            onChange={(e) => updateProperty("subheadingColor", e.target.value)}
+            className="w-12 h-10 p-1 cursor-pointer"
+          />
+          <Input
+            value={localProps.subheadingColor || "#4b5563"}
+            onChange={(e) => updateProperty("subheadingColor", e.target.value)}
+            placeholder="#4b5563"
+            className="flex-1"
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium">Button Text Color</Label>
+        <div className="flex gap-2">
+          <Input
+            type="color"
+            value={localProps.ctaButtonTextColor || "#ffffff"}
+            onChange={(e) => updateProperty("ctaButtonTextColor", e.target.value)}
+            className="w-12 h-10 p-1 cursor-pointer"
+          />
+          <Input
+            value={localProps.ctaButtonTextColor || "#ffffff"}
+            onChange={(e) => updateProperty("ctaButtonTextColor", e.target.value)}
+            placeholder="#ffffff"
+            className="flex-1"
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium">Background Image URL</Label>
+        <Input
+          value={localProps.backgroundImage || ""}
+          onChange={(e) => updateProperty("backgroundImage", e.target.value)}
+          placeholder="https://example.com/image.jpg"
+        />
+        {localProps.backgroundImage && (
+          <div className="mt-2 text-xs text-gray-600">
+            <div
+              className="w-full h-20 rounded border border-gray-300 bg-cover bg-center mt-1"
+              style={{ backgroundImage: `url(${localProps.backgroundImage})` }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium">Overlay Opacity (0-100)</Label>
+        <Input
+          type="number"
+          min="0"
+          max="100"
+          value={localProps.overlayOpacity || 0}
+          onChange={(e) => updateProperty("overlayOpacity", parseInt(e.target.value))}
+          placeholder="0"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Use overlay to make text more readable over the background image
+        </p>
+      </div>
     </div>
   );
 
