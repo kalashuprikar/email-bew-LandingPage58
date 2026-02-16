@@ -183,6 +183,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
   const [editSubheadingText, setEditSubheadingText] = React.useState(props.subheading || "");
   const [isEditingButton, setIsEditingButton] = React.useState(false);
   const [editButtonText, setEditButtonText] = React.useState(props.ctaButtonText || "");
+  const [hoveredElement, setHoveredElement] = React.useState<"heading" | "subheading" | "button" | null>(null);
 
   const handleHeadlineSave = () => {
     if (editHeadingText.trim()) {
@@ -219,7 +220,13 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
     >
       <div className="flex flex-col items-center justify-center h-full px-4 md:px-8 py-8 md:py-16 text-center">
         {/* Heading */}
-        <div className="relative mb-4 px-4 py-2 rounded transition-all">
+        <div
+          className={`relative mb-4 px-4 py-2 rounded transition-all ${
+            hoveredElement === "heading" ? "border-2 border-dashed border-valasys-orange" : ""
+          }`}
+          onMouseEnter={() => setHoveredElement("heading")}
+          onMouseLeave={() => setHoveredElement(null)}
+        >
           {isEditingHeading ? (
             <input
               type="text"
@@ -239,7 +246,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
             />
           ) : (
             <h1
-              className="text-2xl md:text-5xl font-bold text-gray-900 cursor-text hover:opacity-80"
+              className="text-2xl md:text-5xl font-bold text-gray-900 cursor-text"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setEditHeadingText(props.headline || "");
@@ -252,7 +259,13 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
         </div>
 
         {/* Subheading */}
-        <div className="relative mb-8 px-4 py-2 rounded transition-all max-w-2xl">
+        <div
+          className={`relative mb-8 px-4 py-2 rounded transition-all max-w-2xl ${
+            hoveredElement === "subheading" ? "border-2 border-dashed border-valasys-orange" : ""
+          }`}
+          onMouseEnter={() => setHoveredElement("subheading")}
+          onMouseLeave={() => setHoveredElement(null)}
+        >
           {isEditingSubheading ? (
             <input
               type="text"
@@ -272,7 +285,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
             />
           ) : (
             <p
-              className="text-sm md:text-xl text-gray-600 cursor-text hover:opacity-80"
+              className="text-sm md:text-xl text-gray-600 cursor-text"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setEditSubheadingText(props.subheading || "");
@@ -285,7 +298,13 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
         </div>
 
         {/* CTA Button */}
-        <div className="relative px-4 py-2 rounded transition-all">
+        <div
+          className={`relative px-4 py-2 rounded transition-all ${
+            hoveredElement === "button" ? "border-2 border-dashed border-valasys-orange" : ""
+          }`}
+          onMouseEnter={() => setHoveredElement("button")}
+          onMouseLeave={() => setHoveredElement(null)}
+        >
           {isEditingButton ? (
             <input
               type="text"
