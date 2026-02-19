@@ -61,7 +61,7 @@ export const EditableLink: React.FC<EditableLinkProps> = ({
         setIsEditing(true);
       }}
       className={`cursor-pointer px-3 py-2 rounded-full transition-all ${
-        isHovered ? "border border-dashed border-orange-300" : ""
+        isHovered ? "border border-dotted border-orange-300" : ""
       } ${isSelected ? "font-semibold text-orange-400" : ""}`}
       title="Click to edit"
     >

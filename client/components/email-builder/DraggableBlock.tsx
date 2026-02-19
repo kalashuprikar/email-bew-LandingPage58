@@ -92,7 +92,7 @@ export const DraggableBlock: React.FC<DraggableBlockProps> = ({
         "group relative cursor-move transition-all",
         isDragging && "opacity-50 scale-95",
         isOver && "ring-2 ring-valasys-orange rounded-lg",
-        !isPartOfInlineGroup && isHovering && !isBlockSelected && "border-2 border-dashed border-valasys-orange rounded-lg",
+        !isPartOfInlineGroup && isHovering && !isBlockSelected && "border-2 border-dotted border-valasys-orange rounded-lg",
         !isPartOfInlineGroup && isBlockSelected && "border-2 border-solid border-valasys-orange rounded-lg",
       )}
       onMouseEnter={() => setIsHovering(true)}

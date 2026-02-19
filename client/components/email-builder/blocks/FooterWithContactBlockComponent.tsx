@@ -95,7 +95,7 @@ export const FooterWithContactBlockComponent: React.FC<
               selectedElement === sectionType
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === sectionType
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             onMouseEnter={() => setHoveredSection(sectionType)}
@@ -178,7 +178,7 @@ export const FooterWithContactBlockComponent: React.FC<
         {sectionDuplicates[sectionType]?.map((duplicate, dupIndex) => (
           <div
             key={`${sectionType}-dup-${dupIndex}`}
-            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dashed border-valasys-orange`}
+            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dotted border-valasys-orange`}
             onMouseEnter={() => setHoveredSection(`${sectionType}-dup-${dupIndex}`)}
             onMouseLeave={() => setHoveredSection(null)}
             onClick={(e) => {

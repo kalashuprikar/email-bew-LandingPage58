@@ -150,7 +150,7 @@ export const FooterWithSocialBlockComponent: React.FC<
               selectedElement === "social"
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === "social"
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             style={{
@@ -249,7 +249,7 @@ export const FooterWithSocialBlockComponent: React.FC<
               selectedElement === "enterpriseName"
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === "enterpriseName"
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             onMouseEnter={() => setHoveredSection("enterpriseName")}
@@ -314,7 +314,7 @@ export const FooterWithSocialBlockComponent: React.FC<
         {sectionDuplicates.enterpriseName?.map((duplicate, dupIndex) => (
           <div
             key={`enterpriseName-dup-${dupIndex}`}
-            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dashed border-valasys-orange`}
+            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dotted border-valasys-orange`}
             onMouseEnter={() => setHoveredSection(`enterpriseName-dup-${dupIndex}`)}
             onMouseLeave={() => setHoveredSection(null)}
             onClick={(e) => {
@@ -380,7 +380,7 @@ export const FooterWithSocialBlockComponent: React.FC<
               selectedElement === "address"
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === "address"
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             onMouseEnter={() => setHoveredSection("address")}
@@ -446,7 +446,7 @@ export const FooterWithSocialBlockComponent: React.FC<
         {sectionDuplicates.address?.map((duplicate, dupIndex) => (
           <div
             key={`address-dup-${dupIndex}`}
-            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dashed border-valasys-orange`}
+            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dotted border-valasys-orange`}
             onMouseEnter={() => setHoveredSection(`address-dup-${dupIndex}`)}
             onMouseLeave={() => setHoveredSection(null)}
             onClick={(e) => {
@@ -513,7 +513,7 @@ export const FooterWithSocialBlockComponent: React.FC<
               selectedElement === "subscriptionText"
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === "subscriptionText"
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             onMouseEnter={() => setHoveredSection("subscriptionText")}
@@ -578,7 +578,7 @@ export const FooterWithSocialBlockComponent: React.FC<
         {sectionDuplicates.subscriptionText?.map((duplicate, dupIndex) => (
           <div
             key={`subscriptionText-dup-${dupIndex}`}
-            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dashed border-valasys-orange`}
+            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dotted border-valasys-orange`}
             onMouseEnter={() => setHoveredSection(`subscriptionText-dup-${dupIndex}`)}
             onMouseLeave={() => setHoveredSection(null)}
             onClick={(e) => {
@@ -644,7 +644,7 @@ export const FooterWithSocialBlockComponent: React.FC<
               selectedElement === "unsubscribeLink"
                 ? "border-2 border-valasys-orange"
                 : hoveredSection === "unsubscribeLink"
-                  ? "border-2 border-dashed border-valasys-orange"
+                  ? "border-2 border-dotted border-valasys-orange"
                   : ""
             }`}
             onMouseEnter={() => setHoveredSection("unsubscribeLink")}
@@ -716,7 +716,7 @@ export const FooterWithSocialBlockComponent: React.FC<
         {sectionDuplicates.unsubscribeLink?.map((duplicate, dupIndex) => (
           <div
             key={`unsubscribeLink-dup-${dupIndex}`}
-            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dashed border-valasys-orange`}
+            className={`cursor-pointer rounded p-2 transition-all relative border-2 border-dotted border-valasys-orange`}
             onMouseEnter={() => setHoveredSection(`unsubscribeLink-dup-${dupIndex}`)}
             onMouseLeave={() => setHoveredSection(null)}
             onClick={(e) => {

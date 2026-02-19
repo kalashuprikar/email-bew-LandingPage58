@@ -2,6 +2,82 @@ import React from "react";
 import { Menu, X, Copy, Trash2 } from "lucide-react";
 import { LandingPageBlock } from "./types";
 import { EditableLink } from "./EditableLink";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const HoverBorderWrapper: React.FC<{
+  children: React.ReactNode;
+  onDelete?: () => void;
+  onDuplicate?: () => void;
+  className?: string;
+  isSelected?: boolean;
+}> = ({ children, onDelete, onDuplicate, className, isSelected: initialIsSelected }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const [isSelected, setIsSelected] = React.useState(initialIsSelected || false);
+
+  React.useEffect(() => {
+    setIsSelected(initialIsSelected || false);
+  }, [initialIsSelected]);
+
+  return (
+    <div
+      className={cn(
+        "relative transition-all group/editable",
+        isSelected
+          ? "border-2 border-solid border-valasys-orange rounded p-1"
+          : isHovered
+            ? "border-2 border-dotted border-valasys-orange rounded p-1"
+            : "border-2 border-transparent p-1",
+        className
+      )}
+      onMouseEnter={(e) => {
+        e.stopPropagation();
+        setIsHovered(true);
+      }}
+      onMouseLeave={(e) => {
+        e.stopPropagation();
+        setIsHovered(false);
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsSelected(!isSelected);
+      }}
+    >
+      {children}
+      {isSelected && (
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex gap-1 bg-white rounded-lg shadow-xl border border-valasys-orange p-1 z-[100]">
+          {onDuplicate && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 hover:bg-orange-50 hover:text-valasys-orange"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-600"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+                setIsSelected(false);
+              }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface BlockPreviewProps {
   block: LandingPageBlock;
@@ -292,7 +368,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
         draggable
         className={`relative mb-4 px-4 py-2 rounded transition-all cursor-move group w-full ${
           selectedElement === "heading" ? "border-2 border-solid border-valasys-orange" :
-          hoveredElement === "heading" ? "border-2 border-dashed border-valasys-orange" : ""
+          hoveredElement === "heading" ? "border-2 border-dotted border-valasys-orange" : ""
         }`}
         onDragStart={(e) => {
           e.dataTransfer.effectAllowed = "move";
@@ -402,7 +478,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
         draggable
         className={`relative mb-8 px-4 py-2 rounded transition-all w-full cursor-move group ${
           selectedElement === "subheading" ? "border-2 border-solid border-valasys-orange" :
-          hoveredElement === "subheading" ? "border-2 border-dashed border-valasys-orange" : ""
+          hoveredElement === "subheading" ? "border-2 border-dotted border-valasys-orange" : ""
         }`}
         onDragStart={(e) => {
           e.dataTransfer.effectAllowed = "move";
@@ -512,7 +588,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
         draggable
         className={`relative w-full px-4 py-2 rounded transition-all cursor-move group ${
           selectedElement === "button" ? "border-2 border-solid border-valasys-orange" :
-          hoveredElement === "button" ? "border-2 border-dashed border-valasys-orange" : ""
+          hoveredElement === "button" ? "border-2 border-dotted border-valasys-orange" : ""
         }`}
         style={{
           textAlign: (props.ctaButtonAlign || "center") as any,
@@ -637,7 +713,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
             key={idx}
             className={`relative mb-4 px-4 py-2 rounded transition-all ${
               selectedCopyElement === `heading-${idx}` ? "border-2 border-solid border-valasys-orange" :
-              hoveredElement === `heading-${idx}` ? "border-2 border-dashed border-valasys-orange" : ""
+              hoveredElement === `heading-${idx}` ? "border-2 border-dotted border-valasys-orange" : ""
             }`}
             onMouseEnter={() => setHoveredElement(`heading-${idx}`)}
             onMouseLeave={() => setHoveredElement(null)}
@@ -684,7 +760,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
             key={idx}
             className={`relative mb-8 px-4 py-2 rounded transition-all max-w-2xl ${
               selectedCopyElement === `subheading-${idx}` ? "border-2 border-solid border-valasys-orange" :
-              hoveredElement === `subheading-${idx}` ? "border-2 border-dashed border-valasys-orange" : ""
+              hoveredElement === `subheading-${idx}` ? "border-2 border-dotted border-valasys-orange" : ""
             }`}
             onMouseEnter={() => setHoveredElement(`subheading-${idx}`)}
             onMouseLeave={() => setHoveredElement(null)}
@@ -731,7 +807,7 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
             key={idx}
             className={`relative px-4 py-2 rounded transition-all mt-3 ${
               selectedCopyElement === `button-${idx}` ? "border-2 border-solid border-valasys-orange" :
-              hoveredElement === `button-${idx}` ? "border-2 border-dashed border-valasys-orange" : ""
+              hoveredElement === `button-${idx}` ? "border-2 border-dotted border-valasys-orange" : ""
             }`}
             onMouseEnter={() => !isEditingButton && setHoveredElement(`button-${idx}`)}
             onMouseLeave={() => setHoveredElement(null)}
@@ -795,6 +871,7 @@ export const FeaturesBlockPreview: React.FC<BlockPreviewProps> = ({
   block,
   isSelected,
   onSelect,
+  onUpdate,
 }) => {
   const props = block.properties;
   return (
@@ -806,10 +883,63 @@ export const FeaturesBlockPreview: React.FC<BlockPreviewProps> = ({
       }}
     >
       <div className="px-4 md:px-8 py-8 md:py-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
-          {props.heading}
-        </h2>
-        <p className="text-center text-sm md:text-base text-gray-600 mb-8 md:mb-12">{props.description}</p>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, heading: "" })}
+          onDuplicate={() => {
+            const headlines = props.extraHeadlines || [];
+            onUpdate({ ...props, extraHeadlines: [...headlines, props.heading] });
+          }}
+        >
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
+            {props.heading}
+          </h2>
+        </HoverBorderWrapper>
+
+        {props.extraHeadlines?.map((h: string, i: number) => (
+          <HoverBorderWrapper
+            key={i}
+            onDelete={() => {
+              const headlines = props.extraHeadlines.filter((_: any, idx: number) => idx !== i);
+              onUpdate({ ...props, extraHeadlines: headlines });
+            }}
+            onDuplicate={() => {
+              const headlines = [...props.extraHeadlines];
+              headlines.splice(i + 1, 0, h);
+              onUpdate({ ...props, extraHeadlines: headlines });
+            }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
+              {h}
+            </h2>
+          </HoverBorderWrapper>
+        ))}
+
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, description: "" })}
+          onDuplicate={() => {
+            const descriptions = props.extraDescriptions || [];
+            onUpdate({ ...props, extraDescriptions: [...descriptions, props.description] });
+          }}
+        >
+          <p className="text-center text-sm md:text-base text-gray-600 mb-8 md:mb-12">{props.description}</p>
+        </HoverBorderWrapper>
+
+        {props.extraDescriptions?.map((d: string, i: number) => (
+          <HoverBorderWrapper
+            key={i}
+            onDelete={() => {
+              const descriptions = props.extraDescriptions.filter((_: any, idx: number) => idx !== i);
+              onUpdate({ ...props, extraDescriptions: descriptions });
+            }}
+            onDuplicate={() => {
+              const descriptions = [...props.extraDescriptions];
+              descriptions.splice(i + 1, 0, d);
+              onUpdate({ ...props, extraDescriptions: descriptions });
+            }}
+          >
+            <p className="text-center text-sm md:text-base text-gray-600 mb-8 md:mb-12">{d}</p>
+          </HoverBorderWrapper>
+        ))}
         <div
           className="gap-4 md:gap-8"
           style={{
@@ -817,14 +947,28 @@ export const FeaturesBlockPreview: React.FC<BlockPreviewProps> = ({
             gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))`,
           }}
         >
-          {props.features?.map((feature: any) => (
-            <div key={feature.id} className="text-center">
-              <div className="text-3xl md:text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-xs md:text-sm text-gray-600">{feature.description}</p>
-            </div>
+          {props.features?.map((feature: any, featureIndex: number) => (
+            <HoverBorderWrapper
+              key={feature.id}
+              onDelete={() => {
+                const newFeatures = props.features.filter((f: any) => f.id !== feature.id);
+                onUpdate({ ...props, features: newFeatures });
+              }}
+              onDuplicate={() => {
+                const newFeature = { ...feature, id: `feature-${Date.now()}` };
+                const newFeatures = [...props.features];
+                newFeatures.splice(featureIndex + 1, 0, newFeature);
+                onUpdate({ ...props, features: newFeatures });
+              }}
+            >
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-xs md:text-sm text-gray-600">{feature.description}</p>
+              </div>
+            </HoverBorderWrapper>
           ))}
         </div>
       </div>
@@ -1060,7 +1204,7 @@ export const SpacerBlockPreview: React.FC<BlockPreviewProps> = ({
     <div
       onClick={onSelect}
       style={{ height: props.height || "60px" }}
-      className={`border border-dashed cursor-pointer transition-all ${
+      className={`border border-dotted cursor-pointer transition-all ${
         isSelected
           ? "border-orange-300 bg-orange-50"
           : "border-gray-300 bg-gray-50"
@@ -1846,7 +1990,7 @@ export const ContentImageBlockPreview: React.FC<BlockPreviewProps> = ({
               />
             )}
             {!props.imageUrl && (
-              <div className="w-48 h-40 bg-gray-200 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+              <div className="w-48 h-40 bg-gray-200 rounded border-2 border-dotted border-gray-300 flex items-center justify-center">
                 <span className="text-gray-400 text-sm">No image</span>
               </div>
             )}
