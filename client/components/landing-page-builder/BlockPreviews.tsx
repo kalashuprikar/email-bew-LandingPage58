@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, X, Copy, Trash2, Upload } from "lucide-react";
+import { Menu, X, Copy, Trash2 } from "lucide-react";
 import { LandingPageBlock } from "./types";
 import { EditableLink } from "./EditableLink";
 
@@ -1891,38 +1891,17 @@ export const ContentImageBlockPreview: React.FC<BlockPreviewProps> = ({
           props.imagePosition === "right" ? "flex-row-reverse" : "flex-row"
         }`}>
           {/* Image */}
-          <div className="flex-shrink-0 relative group/image">
+          <div className="flex-shrink-0">
             {props.imageUrl && (
-              <div className="relative overflow-hidden rounded border-2 border-orange-300">
-                <img
-                  src={props.imageUrl}
-                  alt="Product"
-                  className="w-48 h-40 object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                  <button
-                    className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors"
-                    title="Upload image"
-                  >
-                    <Upload className="w-5 h-5" />
-                  </button>
-                  <button
-                    className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors"
-                    title="Delete image"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onUpdate({ ...props, imageUrl: "" });
-                    }}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+              <img
+                src={props.imageUrl}
+                alt="Product"
+                className="w-48 h-40 object-cover rounded border-2 border-orange-300"
+              />
             )}
             {!props.imageUrl && (
-              <div className="w-48 h-40 bg-gray-200 rounded border-2 border-dashed border-gray-300 flex items-center justify-center flex-col gap-2">
-                <Upload className="w-6 h-6 text-gray-400" />
-                <span className="text-gray-400 text-xs font-medium">Upload Image</span>
+              <div className="w-48 h-40 bg-gray-200 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <span className="text-gray-400 text-sm">No image</span>
               </div>
             )}
           </div>
@@ -1936,26 +1915,23 @@ export const ContentImageBlockPreview: React.FC<BlockPreviewProps> = ({
               {props.description || "Your description here"}
             </p>
             <button
-              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded text-sm mb-2"
+              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded text-sm"
               style={{ backgroundColor: props.buttonColor || "#FF6A00" }}
             >
               {props.buttonText || "Call to action"}
             </button>
-            <div className="text-xs text-gray-500 font-mono">
-              Link: {props.buttonLink || "#"}
-            </div>
           </div>
         </div>
 
         {/* Swap Position Button */}
-        <div className="mt-8 flex justify-start">
+        <div className="mt-4 flex justify-center">
           <button
             onClick={(e) => {
               e.stopPropagation();
               const newPosition = props.imagePosition === "left" ? "right" : "left";
               onUpdate({ ...props, imagePosition: newPosition });
             }}
-            className="px-4 py-2 text-xs text-gray-700 font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+            className="text-xs text-gray-600 hover:text-gray-900 underline"
           >
             Swap Image Position
           </button>

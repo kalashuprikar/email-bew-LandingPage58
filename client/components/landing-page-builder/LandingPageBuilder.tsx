@@ -16,7 +16,6 @@ import {
   createAboutBlock,
   createContactFormBlock,
   createFooterBlock,
-  createContentImageBlock,
 } from "./utils";
 import { DraggableLandingPagePreview } from "./DraggableLandingPagePreview";
 import { BlocksPanel } from "./BlocksPanel";
@@ -59,13 +58,7 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
         description: "A new landing page",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        blocks: [
-          createHeaderBlock(),
-          createHeroBlock(),
-          createContentImageBlock("left"),
-          createContentImageBlock("right"),
-          createFooterBlock(),
-        ],
+        blocks: [],
       };
       setPage(newPage);
       setPageName(newPage.name);
