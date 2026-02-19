@@ -5,6 +5,32 @@ import { EditableLink } from "./EditableLink";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+// Context for managing selection within blocks
+const SelectionContext = React.createContext<{
+  selectedId: string | null;
+  setSelectedId: (id: string | null) => void;
+}>({
+  selectedId: null,
+  setSelectedId: () => {},
+});
+
+export const SelectionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+
+  // Clear selection when clicking outside
+  React.useEffect(() => {
+    const handleClick = () => setSelectedId(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
+  return (
+    <SelectionContext.Provider value={{ selectedId, setSelectedId }}>
+      {children}
+    </SelectionContext.Provider>
+  );
+};
+
 const HoverBorderWrapper: React.FC<{
   children: React.ReactNode;
   onDelete?: () => void;
@@ -13,11 +39,10 @@ const HoverBorderWrapper: React.FC<{
   isSelected?: boolean;
 }> = ({ children, onDelete, onDuplicate, className, isSelected: initialIsSelected }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  const [isSelected, setIsSelected] = React.useState(initialIsSelected || false);
+  const { selectedId, setSelectedId } = React.useContext(SelectionContext);
+  const id = React.useId();
 
-  React.useEffect(() => {
-    setIsSelected(initialIsSelected || false);
-  }, [initialIsSelected]);
+  const isSelected = selectedId === id || initialIsSelected;
 
   return (
     <div
@@ -40,7 +65,11 @@ const HoverBorderWrapper: React.FC<{
       }}
       onClick={(e) => {
         e.stopPropagation();
-        setIsSelected(!isSelected);
+        if (isSelected) {
+          setSelectedId(null);
+        } else {
+          setSelectedId(id);
+        }
       }}
     >
       {children}
@@ -67,7 +96,7 @@ const HoverBorderWrapper: React.FC<{
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
-                setIsSelected(false);
+                setSelectedId(null);
               }}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -128,78 +157,104 @@ export const HeaderBlockPreview: React.FC<BlockPreviewProps> = ({
     >
       <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3">
-          {props.logoUrl && (
-            <img
-              src={props.logoUrl}
-              alt="Logo"
-              className="h-8 object-contain"
-            />
-          )}
-          {isEditingLogoText ? (
-            <input
-              type="text"
-              value={editLogoText}
-              onChange={(e) => setEditLogoText(e.target.value)}
-              onBlur={handleLogoTextSave}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleLogoTextSave();
-                if (e.key === 'Escape') {
-                  setEditLogoText(props.logoText || "");
-                  setIsEditingLogoText(false);
-                }
-              }}
-              onClick={(e) => e.stopPropagation()}
-              className="font-bold text-gray-900 px-2 py-1 border border-orange-300 rounded focus:outline-none w-24"
-              autoFocus
-            />
-          ) : (
-            <div
-              className="font-bold text-gray-900 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditLogoText(props.logoText || "");
-                setIsEditingLogoText(true);
-              }}
-            >
-              {props.logoText}
+          <HoverBorderWrapper
+            onDelete={() => onUpdate({ ...props, logoUrl: "", logoText: "" })}
+          >
+            <div className="flex items-center gap-2">
+              {props.logoUrl && (
+                <img
+                  src={props.logoUrl}
+                  alt="Logo"
+                  className="h-8 object-contain"
+                />
+              )}
+              {isEditingLogoText ? (
+                <input
+                  type="text"
+                  value={editLogoText}
+                  onChange={(e) => setEditLogoText(e.target.value)}
+                  onBlur={handleLogoTextSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleLogoTextSave();
+                    if (e.key === 'Escape') {
+                      setEditLogoText(props.logoText || "");
+                      setIsEditingLogoText(false);
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-bold text-gray-900 px-2 py-1 border border-orange-300 rounded focus:outline-none w-24"
+                  autoFocus
+                />
+              ) : (
+                <div
+                  className="font-bold text-gray-900 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditLogoText(props.logoText || "");
+                    setIsEditingLogoText(true);
+                  }}
+                >
+                  {props.logoText}
+                </div>
+              )}
             </div>
-          )}
+          </HoverBorderWrapper>
         </div>
 
         {/* Desktop Navigation (hidden on mobile) */}
         <div className="hidden md:flex preview-desktop-only gap-4 text-sm text-gray-600 items-center">
           {props.navigationLinks?.map((link: any, i: number) => (
-            <div
+            <HoverBorderWrapper
               key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedNavLinkIndex(i);
-                onLinkSelect?.(i, "navigation");
+              onDelete={() => {
+                const updated = props.navigationLinks.filter((_: any, idx: number) => idx !== i);
+                onUpdate({ ...props, navigationLinks: updated });
               }}
-              onMouseEnter={() => setHoveredLinkIndex(i)}
-              onMouseLeave={() => setHoveredLinkIndex(null)}
-              className="hover:text-gray-900 cursor-pointer transition-all"
+              onDuplicate={() => {
+                const updated = [...props.navigationLinks];
+                updated.splice(i + 1, 0, { ...link });
+                onUpdate({ ...props, navigationLinks: updated });
+              }}
             >
-              <EditableLink
-                label={link.label}
-                href={link.href}
-                onUpdate={(label, href) => handleLinkUpdate(i, label, href)}
-                inline={true}
-                isSelected={selectedNavLinkIndex === i}
-                isHovered={hoveredLinkIndex === i}
-              />
-            </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedNavLinkIndex(i);
+                  onLinkSelect?.(i, "navigation");
+                }}
+                onMouseEnter={() => setHoveredLinkIndex(i)}
+                onMouseLeave={() => setHoveredLinkIndex(null)}
+                className="hover:text-gray-900 cursor-pointer transition-all"
+              >
+                <EditableLink
+                  label={link.label}
+                  href={link.href}
+                  onUpdate={(label, href) => handleLinkUpdate(i, label, href)}
+                  inline={true}
+                  isSelected={selectedNavLinkIndex === i}
+                  isHovered={hoveredLinkIndex === i}
+                />
+              </div>
+            </HoverBorderWrapper>
           ))}
-          <button className="px-4 py-2 bg-valasys-orange text-white text-sm font-medium rounded hover:bg-orange-600 transition-colors whitespace-nowrap">
-            {props.ctaButtonText}
-          </button>
+          <HoverBorderWrapper
+            onDelete={() => onUpdate({ ...props, ctaButtonText: "" })}
+          >
+            <button className="px-4 py-2 bg-valasys-orange text-white text-sm font-medium rounded hover:bg-orange-600 transition-colors whitespace-nowrap">
+              {props.ctaButtonText}
+            </button>
+          </HoverBorderWrapper>
         </div>
 
         {/* Mobile Hamburger Menu (visible only on mobile) */}
         <div className="md:hidden preview-mobile-only flex items-center gap-2">
-          <button className="px-3 py-2 bg-valasys-orange text-white text-xs font-medium rounded hover:bg-orange-600 transition-colors whitespace-nowrap">
-            {props.ctaButtonText}
-          </button>
+          <HoverBorderWrapper
+            onDelete={() => onUpdate({ ...props, ctaButtonText: "" })}
+          >
+            <button className="px-3 py-2 bg-valasys-orange text-white text-xs font-medium rounded hover:bg-orange-600 transition-colors whitespace-nowrap">
+              {props.ctaButtonText}
+            </button>
+          </HoverBorderWrapper>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -364,106 +419,78 @@ export const HeroBlockPreview: React.FC<BlockPreviewProps> = ({
     }
 
     return (
-      <div
-        draggable
-        className={`relative mb-4 px-4 py-2 rounded transition-all cursor-move group w-full ${
-          selectedElement === "heading" ? "border-2 border-solid border-valasys-orange" :
-          hoveredElement === "heading" ? "border-2 border-dotted border-valasys-orange" : ""
-        }`}
-        onDragStart={(e) => {
-          e.dataTransfer.effectAllowed = "move";
-          e.dataTransfer.setData("text/plain", "heading");
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = "move";
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const draggedId = e.dataTransfer.getData("text/plain");
-          if (draggedId && draggedId !== "heading") {
-            handleElementDrop(draggedId, "heading");
-          }
-        }}
-        onMouseEnter={() => !isEditingHeading && setHoveredElement("heading")}
-        onMouseLeave={() => setHoveredElement(null)}
-        onClick={(e) => {
-          e.stopPropagation();
-          onElementSelect?.("heading");
-        }}
+      <HoverBorderWrapper
+        onDelete={() => handleDeleteHeading()}
+        onDuplicate={() => handleCopyHeading()}
+        className="mb-4 w-full"
       >
-        {isEditingHeading ? (
-          <textarea
-            ref={headingTextareaRef}
-            value={editHeadingText}
-            onChange={(e) => {
-              setEditHeadingText(e.target.value);
-              adjustTextareaHeight(headingTextareaRef.current);
-            }}
-            onBlur={handleHeadlineSave}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
+        <div
+          draggable
+          className="relative px-4 py-2 rounded transition-all w-full cursor-move"
+          onDragStart={(e) => {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", "heading");
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const draggedId = e.dataTransfer.getData("text/plain");
+            if (draggedId && draggedId !== "heading") {
+              handleElementDrop(draggedId, "heading");
+            }
+          }}
+        >
+          {isEditingHeading ? (
+            <textarea
+              ref={headingTextareaRef}
+              value={editHeadingText}
+              onChange={(e) => {
+                setEditHeadingText(e.target.value);
+                adjustTextareaHeight(headingTextareaRef.current);
+              }}
+              onBlur={handleHeadlineSave}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setEditHeadingText(props.headline || "");
+                  setIsEditingHeading(false);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="text-2xl md:text-5xl font-bold text-gray-900 px-2 py-1 focus:outline-none bg-transparent resize-none overflow-hidden whitespace-pre-wrap break-words"
+              style={{
+                width: props.headlineWidth ?? "100%",
+                height: props.headlineHeight ?? "auto",
+                textAlign: (props.headlineAlign || "center") as any,
+              }}
+              autoFocus
+              onFocus={(e) => {
+                setTimeout(() => adjustTextareaHeight(e.target as HTMLTextAreaElement), 0);
+              }}
+            />
+          ) : (
+            <h1
+              className="text-2xl md:text-5xl font-bold cursor-text break-words"
+              style={{
+                color: props.headlineColor || "#1f2937",
+                wordBreak: "break-word",
+                width: props.headlineWidth ?? "100%",
+                height: props.headlineHeight ?? "auto",
+                textAlign: (props.headlineAlign || "center") as any,
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
                 setEditHeadingText(props.headline || "");
-                setIsEditingHeading(false);
-              }
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="text-2xl md:text-5xl font-bold text-gray-900 px-2 py-1 focus:outline-none bg-transparent resize-none overflow-hidden whitespace-pre-wrap break-words"
-            style={{
-              width: props.headlineWidth ?? "100%",
-              height: props.headlineHeight ?? "auto",
-              textAlign: (props.headlineAlign || "center") as any,
-            }}
-            autoFocus
-            onFocus={(e) => {
-              setTimeout(() => adjustTextareaHeight(e.target as HTMLTextAreaElement), 0);
-            }}
-          />
-        ) : (
-          <h1
-            className="text-2xl md:text-5xl font-bold cursor-text break-words"
-            style={{
-              color: props.headlineColor || "#1f2937",
-              wordBreak: "break-word",
-              width: props.headlineWidth ?? "100%",
-              height: props.headlineHeight ?? "auto",
-              textAlign: (props.headlineAlign || "center") as any,
-            }}
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              setEditHeadingText(props.headline || "");
-              setIsEditingHeading(true);
-            }}
-          >
-            {props.headline}
-          </h1>
-        )}
-
-        {selectedElement === "heading" && (
-          <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 flex gap-1 bg-white rounded-lg border border-valasys-orange p-2 z-50 mt-2">
-            <button
-              className="h-8 w-8 p-0 hover:bg-orange-50 hover:text-valasys-orange transition-colors flex items-center justify-center rounded"
-              title="Copy heading"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopyHeading();
+                setIsEditingHeading(true);
               }}
             >
-              <Copy className="w-4 h-4" />
-            </button>
-            <button
-              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center justify-center rounded"
-              title="Delete heading"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteHeading();
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
+              {props.headline}
+            </h1>
+          )}
+        </div>
+      </HoverBorderWrapper>
     );
   };
 
@@ -981,13 +1008,36 @@ export const FeaturesBlockPreview: React.FC<BlockPreviewProps> = ({
               }}
             >
               <div className="text-center flex flex-col items-center">
-                <div className="mb-4">
+                <HoverBorderWrapper
+                  className="mb-4"
+                  onDelete={() => {
+                    const newFeatures = [...props.features];
+                    newFeatures[featureIndex] = { ...feature, icon: "" };
+                    onUpdate({ ...props, features: newFeatures });
+                  }}
+                >
                   <FeatureIcon icon={feature.icon} />
-                </div>
-                <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-xs md:text-sm text-gray-600">{feature.description}</p>
+                </HoverBorderWrapper>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newFeatures = [...props.features];
+                    newFeatures[featureIndex] = { ...feature, title: "" };
+                    onUpdate({ ...props, features: newFeatures });
+                  }}
+                >
+                  <h3 className="text-sm md:text-lg font-semibold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
+                </HoverBorderWrapper>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newFeatures = [...props.features];
+                    newFeatures[featureIndex] = { ...feature, description: "" };
+                    onUpdate({ ...props, features: newFeatures });
+                  }}
+                >
+                  <p className="text-xs md:text-sm text-gray-600">{feature.description}</p>
+                </HoverBorderWrapper>
               </div>
             </HoverBorderWrapper>
           ))}
@@ -1012,23 +1062,65 @@ export const TestimonialsBlockPreview: React.FC<BlockPreviewProps> = ({
       }}
     >
       <div className="px-4 md:px-8 py-8 md:py-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
-          {props.heading}
-        </h2>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, heading: "" })}
+          onDuplicate={() => {
+            onUpdate({ ...props, heading: props.heading + " (Copy)" });
+          }}
+        >
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
+            {props.heading}
+          </h2>
+        </HoverBorderWrapper>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {props.testimonials?.map((testimonial: any) => (
-            <div
+          {props.testimonials?.map((testimonial: any, index: number) => (
+            <HoverBorderWrapper
               key={testimonial.id}
-              className="bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200"
+              onDelete={() => {
+                const newTestimonials = props.testimonials.filter((t: any) => t.id !== testimonial.id);
+                onUpdate({ ...props, testimonials: newTestimonials });
+              }}
+              onDuplicate={() => {
+                const newTestimonial = { ...testimonial, id: `testimonial-${Date.now()}` };
+                const newTestimonials = [...props.testimonials];
+                newTestimonials.splice(index + 1, 0, newTestimonial);
+                onUpdate({ ...props, testimonials: newTestimonials });
+              }}
             >
-              <p className="text-sm md:text-base text-gray-600 mb-4">{testimonial.quote}</p>
-              <div>
-                <p className="font-semibold text-sm md:text-base text-gray-900">
-                  {testimonial.author}
-                </p>
-                <p className="text-xs md:text-sm text-gray-600">{testimonial.role}</p>
+              <div className="bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 h-full">
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newTestimonials = [...props.testimonials];
+                    newTestimonials[index] = { ...testimonial, quote: "" };
+                    onUpdate({ ...props, testimonials: newTestimonials });
+                  }}
+                >
+                  <p className="text-sm md:text-base text-gray-600 mb-4">{testimonial.quote}</p>
+                </HoverBorderWrapper>
+                <div>
+                  <HoverBorderWrapper
+                    onDelete={() => {
+                      const newTestimonials = [...props.testimonials];
+                      newTestimonials[index] = { ...testimonial, author: "" };
+                      onUpdate({ ...props, testimonials: newTestimonials });
+                    }}
+                  >
+                    <p className="font-semibold text-sm md:text-base text-gray-900">
+                      {testimonial.author}
+                    </p>
+                  </HoverBorderWrapper>
+                  <HoverBorderWrapper
+                    onDelete={() => {
+                      const newTestimonials = [...props.testimonials];
+                      newTestimonials[index] = { ...testimonial, role: "" };
+                      onUpdate({ ...props, testimonials: newTestimonials });
+                    }}
+                  >
+                    <p className="text-xs md:text-sm text-gray-600">{testimonial.role}</p>
+                  </HoverBorderWrapper>
+                </div>
               </div>
-            </div>
+            </HoverBorderWrapper>
           ))}
         </div>
       </div>
@@ -1053,25 +1145,53 @@ export const AboutBlockPreview: React.FC<BlockPreviewProps> = ({
       <div className="px-4 md:px-8 py-8 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center">
           {props.imagePosition === "left" && (
-            <div className="h-40 md:h-64 bg-gray-300 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">Image</span>
-            </div>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, imageUrl: "" })}
+            >
+              <div className="h-40 md:h-64 bg-gray-300 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500">Image</span>
+              </div>
+            </HoverBorderWrapper>
           )}
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              {props.heading}
-            </h2>
-            <p className="text-sm md:text-base text-gray-600 mb-6 leading-relaxed">
-              {props.content}
-            </p>
-            <button className="px-6 py-2 bg-valasys-orange text-white text-sm md:text-base font-medium rounded hover:bg-orange-600 transition-colors">
-              {props.cta?.text}
-            </button>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, heading: "" })}
+              onDuplicate={() => {
+                onUpdate({ ...props, heading: props.heading + " (Copy)" });
+              }}
+            >
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                {props.heading}
+              </h2>
+            </HoverBorderWrapper>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, content: "" })}
+              onDuplicate={() => {
+                onUpdate({ ...props, content: props.content + " (Copy)" });
+              }}
+            >
+              <p className="text-sm md:text-base text-gray-600 mb-6 leading-relaxed">
+                {props.content}
+              </p>
+            </HoverBorderWrapper>
+            {props.cta && (
+              <HoverBorderWrapper
+                onDelete={() => onUpdate({ ...props, cta: null })}
+              >
+                <button className="px-6 py-2 bg-valasys-orange text-white text-sm md:text-base font-medium rounded hover:bg-orange-600 transition-colors">
+                  {props.cta?.text}
+                </button>
+              </HoverBorderWrapper>
+            )}
           </div>
           {props.imagePosition === "right" && (
-            <div className="h-40 md:h-64 bg-gray-300 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">Image</span>
-            </div>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, imageUrl: "" })}
+            >
+              <div className="h-40 md:h-64 bg-gray-300 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500">Image</span>
+              </div>
+            </HoverBorderWrapper>
           )}
         </div>
       </div>
@@ -1094,37 +1214,70 @@ export const ContactFormBlockPreview: React.FC<BlockPreviewProps> = ({
       }}
     >
       <div className="px-4 md:px-8 py-8 md:py-16 max-w-2xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          {props.heading}
-        </h2>
-        <p className="text-sm md:text-base text-gray-600 mb-8">{props.description}</p>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, heading: "" })}
+          onDuplicate={() => {
+            onUpdate({ ...props, heading: props.heading + " (Copy)" });
+          }}
+        >
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            {props.heading}
+          </h2>
+        </HoverBorderWrapper>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, description: "" })}
+          onDuplicate={() => {
+            onUpdate({ ...props, description: props.description + " (Copy)" });
+          }}
+        >
+          <p className="text-sm md:text-base text-gray-600 mb-8">{props.description}</p>
+        </HoverBorderWrapper>
         <form className="space-y-4">
-          {props.fields?.map((field: any) => (
-            <div key={field.id}>
-              <label className="block text-xs md:text-sm font-medium text-gray-900 mb-2">
-                {field.label}
-              </label>
-              {field.type === "textarea" ? (
-                <textarea
-                  placeholder={field.placeholder}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-valasys-orange text-sm"
-                  rows={4}
-                />
-              ) : (
-                <input
-                  type={field.type}
-                  placeholder={field.placeholder}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-valasys-orange text-sm"
-                />
-              )}
-            </div>
+          {props.fields?.map((field: any, index: number) => (
+            <HoverBorderWrapper
+              key={field.id}
+              onDelete={() => {
+                const newFields = props.fields.filter((f: any) => f.id !== field.id);
+                onUpdate({ ...props, fields: newFields });
+              }}
+              onDuplicate={() => {
+                const newField = { ...field, id: `field-${Date.now()}` };
+                const newFields = [...props.fields];
+                newFields.splice(index + 1, 0, newField);
+                onUpdate({ ...props, fields: newFields });
+              }}
+            >
+              <div>
+                <label className="block text-xs md:text-sm font-medium text-gray-900 mb-2">
+                  {field.label}
+                </label>
+                {field.type === "textarea" ? (
+                  <textarea
+                    placeholder={field.placeholder}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-valasys-orange text-sm"
+                    rows={4}
+                  />
+                ) : (
+                  <input
+                    type={field.type}
+                    placeholder={field.placeholder}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-valasys-orange text-sm"
+                  />
+                )}
+              </div>
+            </HoverBorderWrapper>
           ))}
-          <button
-            style={{ backgroundColor: props.submitButtonColor }}
-            className="w-full py-3 text-white text-sm md:text-base font-medium rounded-lg hover:opacity-90 transition-opacity"
+          <HoverBorderWrapper
+            onDelete={() => onUpdate({ ...props, submitButtonText: "" })}
           >
-            {props.submitButtonText}
-          </button>
+            <button
+              type="button"
+              style={{ backgroundColor: props.submitButtonColor }}
+              className="w-full py-3 text-white text-sm md:text-base font-medium rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {props.submitButtonText}
+            </button>
+          </HoverBorderWrapper>
         </form>
       </div>
     </div>
@@ -1160,8 +1313,16 @@ export const FooterBlockPreview: React.FC<BlockPreviewProps> = ({
       <div className="px-4 md:px-8 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
           <div>
-            <h3 className="font-bold mb-2 text-sm md:text-base">{props.companyName}</h3>
-            <p className="text-xs md:text-sm opacity-75">{props.companyDescription}</p>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, companyName: "" })}
+            >
+              <h3 className="font-bold mb-2 text-sm md:text-base">{props.companyName}</h3>
+            </HoverBorderWrapper>
+            <HoverBorderWrapper
+              onDelete={() => onUpdate({ ...props, companyDescription: "" })}
+            >
+              <p className="text-xs md:text-sm opacity-75">{props.companyDescription}</p>
+            </HoverBorderWrapper>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm md:text-base">Quick Links</h4>
@@ -1249,46 +1410,115 @@ export const PricingBlockPreview: React.FC<BlockPreviewProps> = ({
       }}
     >
       <div className="px-4 md:px-8 py-8 md:py-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
-          {props.heading}
-        </h2>
-        <p className="text-center text-sm md:text-base text-gray-600 mb-8 md:mb-12">{props.subheading}</p>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, heading: "" })}
+          onDuplicate={() => {
+            onUpdate({ ...props, heading: props.heading + " (Copy)" });
+          }}
+        >
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
+            {props.heading}
+          </h2>
+        </HoverBorderWrapper>
+        <HoverBorderWrapper
+          onDelete={() => onUpdate({ ...props, subheading: "" })}
+          onDuplicate={() => {
+            onUpdate({ ...props, subheading: props.subheading + " (Copy)" });
+          }}
+        >
+          <p className="text-center text-sm md:text-base text-gray-600 mb-8 md:mb-12">{props.subheading}</p>
+        </HoverBorderWrapper>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {props.pricingTiers?.map((tier: any) => (
-            <div
+          {props.pricingTiers?.map((tier: any, index: number) => (
+            <HoverBorderWrapper
               key={tier.id}
-              className={`rounded-lg p-6 md:p-8 text-center transition-all ${
-                tier.isHighlighted
-                  ? "bg-gray-900 text-white shadow-lg md:scale-105"
-                  : "bg-white border border-gray-200"
-              }`}
+              onDelete={() => {
+                const newTiers = props.pricingTiers.filter((t: any) => t.id !== tier.id);
+                onUpdate({ ...props, pricingTiers: newTiers });
+              }}
+              onDuplicate={() => {
+                const newTier = { ...tier, id: `tier-${Date.now()}` };
+                const newTiers = [...props.pricingTiers];
+                newTiers.splice(index + 1, 0, newTier);
+                onUpdate({ ...props, pricingTiers: newTiers });
+              }}
             >
-              <h3 className="text-base md:text-lg font-semibold mb-2">{tier.name}</h3>
-              <div className="text-3xl md:text-4xl font-bold mb-2">{tier.price}</div>
-              <p
-                className={`text-xs md:text-sm mb-6 ${tier.isHighlighted ? "text-gray-300" : "text-gray-600"}`}
-              >
-                {tier.description}
-              </p>
-              <ul
-                className={`text-xs md:text-sm mb-6 md:mb-8 space-y-1 md:space-y-2 ${
-                  tier.isHighlighted ? "text-gray-300" : "text-gray-600"
+              <div
+                className={`rounded-lg p-6 md:p-8 text-center transition-all h-full ${
+                  tier.isHighlighted
+                    ? "bg-gray-900 text-white shadow-lg md:scale-105"
+                    : "bg-white border border-gray-200"
                 }`}
               >
-                {tier.features?.map((feature: string, i: number) => (
-                  <li key={i}>• {feature}</li>
-                ))}
-              </ul>
-              <button
-                style={{
-                  backgroundColor: tier.buttonColor,
-                  color: tier.buttonTextColor,
-                }}
-                className="w-full py-2 rounded font-medium hover:opacity-90 transition-opacity text-sm md:text-base"
-              >
-                {tier.buttonText}
-              </button>
-            </div>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newTiers = [...props.pricingTiers];
+                    newTiers[index] = { ...tier, name: "" };
+                    onUpdate({ ...props, pricingTiers: newTiers });
+                  }}
+                >
+                  <h3 className="text-base md:text-lg font-semibold mb-2">{tier.name}</h3>
+                </HoverBorderWrapper>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newTiers = [...props.pricingTiers];
+                    newTiers[index] = { ...tier, price: "" };
+                    onUpdate({ ...props, pricingTiers: newTiers });
+                  }}
+                >
+                  <div className="text-3xl md:text-4xl font-bold mb-2">{tier.price}</div>
+                </HoverBorderWrapper>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newTiers = [...props.pricingTiers];
+                    newTiers[index] = { ...tier, description: "" };
+                    onUpdate({ ...props, pricingTiers: newTiers });
+                  }}
+                >
+                  <p
+                    className={`text-xs md:text-sm mb-6 ${tier.isHighlighted ? "text-gray-300" : "text-gray-600"}`}
+                  >
+                    {tier.description}
+                  </p>
+                </HoverBorderWrapper>
+                <ul
+                  className={`text-xs md:text-sm mb-6 md:mb-8 space-y-1 md:space-y-2 ${
+                    tier.isHighlighted ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  {tier.features?.map((feature: string, i: number) => (
+                    <HoverBorderWrapper
+                      key={i}
+                      onDelete={() => {
+                        const newFeatures = tier.features.filter((_: any, idx: number) => idx !== i);
+                        const newTiers = [...props.pricingTiers];
+                        newTiers[index] = { ...tier, features: newFeatures };
+                        onUpdate({ ...props, pricingTiers: newTiers });
+                      }}
+                    >
+                      <li>• {feature}</li>
+                    </HoverBorderWrapper>
+                  ))}
+                </ul>
+                <HoverBorderWrapper
+                  onDelete={() => {
+                    const newTiers = [...props.pricingTiers];
+                    newTiers[index] = { ...tier, buttonText: "" };
+                    onUpdate({ ...props, pricingTiers: newTiers });
+                  }}
+                >
+                  <button
+                    style={{
+                      backgroundColor: tier.buttonColor,
+                      color: tier.buttonTextColor,
+                    }}
+                    className="w-full py-2 rounded font-medium hover:opacity-90 transition-opacity text-sm md:text-base"
+                  >
+                    {tier.buttonText}
+                  </button>
+                </HoverBorderWrapper>
+              </div>
+            </HoverBorderWrapper>
           ))}
         </div>
       </div>

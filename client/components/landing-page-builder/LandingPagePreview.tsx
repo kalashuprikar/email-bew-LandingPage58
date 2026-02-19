@@ -14,7 +14,7 @@ import {
   PricingBlockPreview,
   FaqBlockPreview,
   SignupBlockPreview,
-  PricingFooterBlockPreview,
+  SelectionProvider,
 } from "./BlockPreviews";
 
 interface LandingPagePreviewProps {
@@ -170,8 +170,10 @@ export const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-lg overflow-hidden flex flex-col gap-4 p-4">
-      {page.blocks.map((block, index) => renderBlock(block, index))}
-    </div>
+    <SelectionProvider>
+      <div className="w-full bg-white rounded-lg overflow-hidden flex flex-col gap-4 p-4">
+        {page.blocks.map((block, index) => renderBlock(block, index))}
+      </div>
+    </SelectionProvider>
   );
 };
