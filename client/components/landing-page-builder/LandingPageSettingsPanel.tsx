@@ -72,6 +72,16 @@ export const LandingPageSettingsPanel: React.FC<
             {selectedElement === "heading" && (
               <>
                 <div>
+                  <Label className="text-sm font-medium">Headline Text</Label>
+                  <textarea
+                    value={localProps.headline || ""}
+                    onChange={(e) => updateProperty("headline", e.target.value)}
+                    placeholder="Enter headline text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    rows={3}
+                  />
+                </div>
+                <div>
                   <Label className="text-sm font-medium">Headline Color</Label>
                   <div className="flex gap-2">
                     <Input
@@ -93,6 +103,16 @@ export const LandingPageSettingsPanel: React.FC<
             {selectedElement === "subheading" && (
               <>
                 <div>
+                  <Label className="text-sm font-medium">Subheading Text</Label>
+                  <textarea
+                    value={localProps.subheading || ""}
+                    onChange={(e) => updateProperty("subheading", e.target.value)}
+                    placeholder="Enter subheading text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    rows={3}
+                  />
+                </div>
+                <div>
                   <Label className="text-sm font-medium">Subheading Color</Label>
                   <div className="flex gap-2">
                     <Input
@@ -113,6 +133,14 @@ export const LandingPageSettingsPanel: React.FC<
             )}
             {selectedElement === "button" && (
               <>
+                <div>
+                  <Label className="text-sm font-medium">Button Text</Label>
+                  <Input
+                    value={localProps.ctaButtonText || ""}
+                    onChange={(e) => updateProperty("ctaButtonText", e.target.value)}
+                    placeholder="Enter button text"
+                  />
+                </div>
                 <div>
                   <Label className="text-sm font-medium">Button Color</Label>
                   <div className="flex gap-2">
