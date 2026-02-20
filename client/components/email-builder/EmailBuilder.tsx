@@ -80,9 +80,10 @@ export const EmailBuilder: React.FC<EmailBuilderProps> = ({
         subject: templateSubject,
       };
       setTemplate(updated);
+      saveTemplateToLocalStorage(updated);
     }, 500);
     return () => clearTimeout(timer);
-  }, [templateName, templateSubject]);
+  }, [templateName, templateSubject, template.backgroundColor, template.documentBackgroundColor]);
 
   const selectedBlock =
     template.blocks.find((b) => b.id === selectedBlockId) || null;
