@@ -1451,13 +1451,20 @@ export function renderTemplateToHTML(template: EmailTemplate): string {
     .join("");
 
   return `<!DOCTYPE html>
-<html>
+<html style="background-color: #ffffff; margin: 0; padding: 0;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${template.subject}</title>
+  <style>
+    html, body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
 </head>
-<body style="background-color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 20px;">
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #ffffff;">
   <div style="max-width: 600px; margin: 0 auto; background-color: ${template.backgroundColor}; border: 1px solid #ddd; border-radius: 4px; padding: ${template.padding}px; box-sizing: border-box; overflow: hidden;">
     ${bodyContent}
   </div>
