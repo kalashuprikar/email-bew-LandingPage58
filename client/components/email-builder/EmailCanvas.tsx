@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDrop } from "react-dnd";
 import { Mail, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -46,6 +46,30 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
 }) => {
   const [hoveredInlineGroup, setHoveredInlineGroup] = useState<string | null>(null);
   const [selectedInlineGroup, setSelectedInlineGroup] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const blockRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
+  const previousBlockCountRef = useRef(template.blocks.length);
+
+  // Auto-scroll to newly added block
+  useEffect(() => {
+    const currentBlockCount = template.blocks.length;
+    const previousBlockCount = previousBlockCountRef.current;
+
+    if (currentBlockCount > previousBlockCount && scrollContainerRef.current) {
+      // A new block was added, scroll to the last block
+      const lastBlock = template.blocks[template.blocks.length - 1];
+      const blockElement = blockRefsMap.current.get(lastBlock.id);
+
+      if (blockElement) {
+        // Use requestAnimationFrame to ensure DOM is updated before scrolling
+        requestAnimationFrame(() => {
+          blockElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    }
+
+    previousBlockCountRef.current = currentBlockCount;
+  }, [template.blocks]);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ["template"],
@@ -69,7 +93,7 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
   }));
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 bg-gray-50">
       <div className="max-w-2xl mx-auto">
         {/* Template Settings */}
         <div className="bg-white border border-gray-200 rounded-t-lg p-4 overflow-x-hidden">
@@ -242,6 +266,10 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
                           {inlineBlocks.map((inlineBlock, i) => (
                             <div
                               key={inlineBlock.id}
+                              ref={(el) => {
+                                if (el) blockRefsMap.current.set(inlineBlock.id, el);
+                                else blockRefsMap.current.delete(inlineBlock.id);
+                              }}
                               className="flex-shrink-0"
                               onClick={(e) => e.stopPropagation()}
                               style={{
@@ -343,26 +371,33 @@ export const EmailCanvas: React.FC<EmailCanvasProps> = ({
 
                 return (
                   <React.Fragment key={block.id}>
-                    <DraggableBlock
-                      block={block}
-                      index={index}
-                      totalBlocks={template.blocks.length}
-                      isSelected={selectedBlockId === block.id}
-                      isEditing={editingBlockId === block.id}
-                      selectedFooterElement={selectedFooterElement}
-                      onBlockUpdate={onBlockUpdate}
-                      onBlockSelect={onBlockSelect}
-                      onEditingBlockChange={onEditingBlockChange}
-                      onFooterElementSelect={onFooterElementSelect}
-                      onMoveBlock={onMoveBlock}
-                      onAddBlock={(newBlock, position) => {
-                        onAddBlock(newBlock, position);
+                    <div
+                      ref={(el) => {
+                        if (el) blockRefsMap.current.set(block.id, el);
+                        else blockRefsMap.current.delete(block.id);
                       }}
-                      onDuplicate={(blockToDuplicate, position) => {
-                        onDuplicateBlock?.(blockToDuplicate, position);
-                      }}
-                      onDelete={(blockId) => onDeleteBlock?.(blockId)}
-                    />
+                    >
+                      <DraggableBlock
+                        block={block}
+                        index={index}
+                        totalBlocks={template.blocks.length}
+                        isSelected={selectedBlockId === block.id}
+                        isEditing={editingBlockId === block.id}
+                        selectedFooterElement={selectedFooterElement}
+                        onBlockUpdate={onBlockUpdate}
+                        onBlockSelect={onBlockSelect}
+                        onEditingBlockChange={onEditingBlockChange}
+                        onFooterElementSelect={onFooterElementSelect}
+                        onMoveBlock={onMoveBlock}
+                        onAddBlock={(newBlock, position) => {
+                          onAddBlock(newBlock, position);
+                        }}
+                        onDuplicate={(blockToDuplicate, position) => {
+                          onDuplicateBlock?.(blockToDuplicate, position);
+                        }}
+                        onDelete={(blockId) => onDeleteBlock?.(blockId)}
+                      />
+                    </div>
                     {/* Drop zone after each block */}
                     <DropZone position={index + 1} onBlockDrop={onAddBlock} />
                   </React.Fragment>
