@@ -555,6 +555,51 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     onBlockUpdate(updatedBlock);
   };
 
+  const handleSubElementContentUpdate = (newContent: string) => {
+    if (!block || !selectedSubElementId) return;
+
+    let updatedBlock: any = { ...block };
+
+    if (block.type === "centeredImageCard" || block.type === "splitImageCard") {
+      const updateList = (listName: string) => {
+        if (updatedBlock[listName]) {
+          const itemIndex = updatedBlock[listName].findIndex((item: any) => item.id === selectedSubElementId);
+          if (itemIndex !== -1) {
+            updatedBlock[listName] = updatedBlock[listName].map((item: any) =>
+              item.id === selectedSubElementId ? { ...item, content: newContent } : item
+            );
+            // Keep legacy single property in sync if this is the first item
+            if (listName === "descriptions" && updatedBlock[listName][0]?.id === selectedSubElementId) {
+              updatedBlock.description = newContent;
+            }
+            if (listName === "titles" && updatedBlock[listName][0]?.id === selectedSubElementId) {
+              updatedBlock.title = newContent;
+            }
+            return true;
+          }
+        }
+        return false;
+      };
+      updateList("titles") || updateList("descriptions") || updateList("buttons");
+    } else if (block.type === "twoColumnCard") {
+      updatedBlock.cards = updatedBlock.cards.map((card: any) =>
+        card.id === selectedSubElementId
+          ? { ...card, description: newContent }
+          : card,
+      );
+    } else if (block.type === "features") {
+      updatedBlock.features = updatedBlock.features.map((feature: any) =>
+        feature.id === selectedSubElementId ? { ...feature, description: newContent } : feature,
+      );
+    } else if (block.type === "stats") {
+      updatedBlock.stats = updatedBlock.stats.map((stat: any) =>
+        stat.id === selectedSubElementId ? { ...stat, label: newContent } : stat,
+      );
+    }
+
+    onBlockUpdate(updatedBlock);
+  };
+
   const [titleWidthInput, setTitleWidthInput] = useState<string>(
     String(block?.type === "title" ? (block.width ?? 100) : 100),
   );
@@ -6435,8 +6480,25 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
             {/* Sub-element specific label */}
             {selectedSubElementId && (
-              <div className="text-xs text-gray-600 p-3 bg-gray-50 rounded">
-                Styling options below apply to the selected element only
+              <div>
+                <div className="text-xs text-gray-600 p-3 bg-gray-50 rounded mb-4">
+                  Styling options below apply to the selected element only
+                </div>
+
+                {/* Content editing for selected sub-element */}
+                {selectedSubElement && (
+                  <div className="space-y-3 mb-4">
+                    <Label className="text-xs font-semibold text-gray-700">
+                      Content
+                    </Label>
+                    <textarea
+                      value={selectedSubElement.content ?? selectedSubElement.text ?? ""}
+                      onChange={(e) => handleSubElementContentUpdate(e.target.value)}
+                      rows={4}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-valasys-orange focus:border-transparent"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
