@@ -58,7 +58,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { DraggableChatSupport } from "@/components/ui/draggable-chat-support";
 import TrialProgressBar from "@/components/ui/trial-progress-bar";
 import TrialBanner from "@/components/ui/trial-banner";
 import TrialBadgeDropdown from "@/components/ui/trial-badge-dropdown";
@@ -169,7 +168,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setSidebarOpen(false);
   }, []);
 
-  const [chatOpen, setChatOpen] = useState(false);
 
   // Tooltip state for disabled Manage Users item (rendered via portal outside sidebar)
   const [manageUsersTooltipVisible, setManageUsersTooltipVisible] =
@@ -308,7 +306,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     console.log("Marking all notifications as read");
   };
 
-  const [chatMinimized, setChatMinimized] = useState(true);
   const [profileInfo, setProfileInfo] = useState<{
     avatarUrl?: string | null;
     fullName?: string;
@@ -348,20 +345,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return currentItem?.name || "Dashboard";
   };
 
-  const handleChatToggle = () => {
-    if (chatMinimized) {
-      setChatMinimized(false);
-      setChatOpen(true);
-    } else {
-      setChatMinimized(true);
-      setChatOpen(false);
-    }
-  };
-
-  const handleChatClose = () => {
-    setChatOpen(false);
-    setChatMinimized(true);
-  };
 
   const handleRestoreMastery = () => {
     try {
@@ -1298,16 +1281,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Draggable Chat Support Widget */}
-      <div data-tour="chat">
-        <DraggableChatSupport
-          isOpen={chatOpen}
-          onClose={handleChatClose}
-          isMinimized={chatMinimized}
-          onMinimize={handleChatToggle}
-          enableDrag={true}
-        />
-      </div>
 
       {/* Platform Tour */}
       <PlatformTour
