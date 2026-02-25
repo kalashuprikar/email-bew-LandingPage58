@@ -410,21 +410,152 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [linkType, setLinkType] = useState("url");
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [selectedStatId, setSelectedStatId] = useState<string | null>(null);
-  const paddingValue =
-    "padding" in (block || {}) ? ((block as any).padding ?? 0) : 0;
-  const marginValue =
-    "margin" in (block || {}) ? ((block as any).margin ?? 0) : 0;
-  const [paddingTop, setPaddingTop] = useState(paddingValue);
-  const [paddingRight, setPaddingRight] = useState(paddingValue);
-  const [paddingBottom, setPaddingBottom] = useState(paddingValue);
-  const [paddingLeft, setPaddingLeft] = useState(paddingValue);
-  const [marginTop, setMarginTop] = useState(marginValue);
-  const [marginRight, setMarginRight] = useState(marginValue);
-  const [marginBottom, setMarginBottom] = useState(marginValue);
-  const [marginLeft, setMarginLeft] = useState(marginValue);
+  const paddingValue = selectedSubElement
+    ? (selectedSubElement.styles?.padding ?? 0)
+    : "padding" in (block || {}) ? ((block as any).padding ?? 0) : 0;
+  const marginValue = selectedSubElement
+    ? (selectedSubElement.styles?.margin ?? 0)
+    : "margin" in (block || {}) ? ((block as any).margin ?? 0) : 0;
+
+  const getEffectivePadding = (side: string) => {
+    if (selectedSubElement?.styles) {
+      const s = selectedSubElement.styles;
+      const key = `padding${side.charAt(0).toUpperCase() + side.slice(1)}`;
+      return s[key] ?? s.padding ?? 0;
+    }
+    const b = (block || {}) as any;
+    const key = `padding${side.charAt(0).toUpperCase() + side.slice(1)}`;
+    return b[key] ?? b.padding ?? 0;
+  };
+
+  const getEffectiveMargin = (side: string) => {
+    if (selectedSubElement?.styles) {
+      const s = selectedSubElement.styles;
+      const key = `margin${side.charAt(0).toUpperCase() + side.slice(1)}`;
+      return s[key] ?? s.margin ?? 0;
+    }
+    const b = (block || {}) as any;
+    const key = `margin${side.charAt(0).toUpperCase() + side.slice(1)}`;
+    return b[key] ?? b.margin ?? 0;
+  };
+
+  const [paddingTop, setPaddingTop] = useState(getEffectivePadding("top"));
+  const [paddingRight, setPaddingRight] = useState(getEffectivePadding("right"));
+  const [paddingBottom, setPaddingBottom] = useState(getEffectivePadding("bottom"));
+  const [paddingLeft, setPaddingLeft] = useState(getEffectivePadding("left"));
+  const [marginTop, setMarginTop] = useState(getEffectiveMargin("top"));
+  const [marginRight, setMarginRight] = useState(getEffectiveMargin("right"));
+  const [marginBottom, setMarginBottom] = useState(getEffectiveMargin("bottom"));
+  const [marginLeft, setMarginLeft] = useState(getEffectiveMargin("left"));
+
+  // Update spacing states when block or sub-element selection changes
+  React.useEffect(() => {
+    setPaddingTop(getEffectivePadding("top"));
+    setPaddingRight(getEffectivePadding("right"));
+    setPaddingBottom(getEffectivePadding("bottom"));
+    setPaddingLeft(getEffectivePadding("left"));
+    setMarginTop(getEffectiveMargin("top"));
+    setMarginRight(getEffectiveMargin("right"));
+    setMarginBottom(getEffectiveMargin("bottom"));
+    setMarginLeft(getEffectiveMargin("left"));
+  }, [block?.id, selectedSubElementId]);
   const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(
     null,
   );
+
+  // Helper to find and update sub-elements in complex blocks
+  const getSelectedSubElement = () => {
+    if (!block || !selectedSubElementId) return null;
+
+    if (block.type === "centeredImageCard" || block.type === "splitImageCard") {
+      const b = block as any;
+      return (
+        b.titles?.find((t: any) => t.id === selectedSubElementId) ||
+        b.descriptions?.find((d: any) => d.id === selectedSubElementId) ||
+        b.buttons?.find((btn: any) => btn.id === selectedSubElementId)
+      );
+    }
+
+    if (block.type === "twoColumnCard") {
+      const b = block as any;
+      return b.cards?.find((c: any) => c.id === selectedSubElementId);
+    }
+
+    if (block.type === "features") {
+      const b = block as any;
+      return b.features?.find((f: any) => f.id === selectedSubElementId);
+    }
+
+    if (block.type === "stats") {
+      const b = block as any;
+      return b.stats?.find((s: any) => s.id === selectedSubElementId);
+    }
+
+    return null;
+  };
+
+  const selectedSubElement = getSelectedSubElement();
+
+  const handleSubElementStyleUpdate = (styleUpdate: any) => {
+    if (!block || !selectedSubElementId || !selectedSubElement) return;
+
+    let updatedBlock = { ...block } as any;
+
+    // Filter out non-style properties if a full block object was passed
+    const styleKeys = [
+      "fontSize", "fontColor", "backgroundColor", "textAlignment", "lineHeight",
+      "fontWeight", "fontStyle", "padding", "paddingTop", "paddingRight",
+      "paddingBottom", "paddingLeft", "margin", "marginTop", "marginRight",
+      "marginBottom", "marginLeft", "borderWidth", "borderColor", "borderRadius",
+      "textDecoration", "alignment", "width", "widthUnit"
+    ];
+
+    const filteredUpdate: any = {};
+    Object.keys(styleUpdate).forEach(key => {
+      if (styleKeys.includes(key)) {
+        filteredUpdate[key] = styleUpdate[key];
+      }
+    });
+
+    if (block.type === "centeredImageCard" || block.type === "splitImageCard") {
+      const updateList = (listName: string) => {
+        if (updatedBlock[listName]) {
+          const itemIndex = updatedBlock[listName].findIndex((item: any) => item.id === selectedSubElementId);
+          if (itemIndex !== -1) {
+            updatedBlock[listName][itemIndex] = {
+              ...updatedBlock[listName][itemIndex],
+              styles: { ...(updatedBlock[listName][itemIndex].styles || {}), ...filteredUpdate }
+            };
+            return true;
+          }
+        }
+        return false;
+      };
+
+      updateList("titles") || updateList("descriptions") || updateList("buttons");
+    } else if (block.type === "twoColumnCard") {
+      updatedBlock.cards = updatedBlock.cards.map((card: any) =>
+        card.id === selectedSubElementId
+          ? { ...card, styles: { ...(card.styles || {}), ...filteredUpdate } }
+          : card
+      );
+    } else if (block.type === "features") {
+      updatedBlock.features = updatedBlock.features.map((feature: any) =>
+        feature.id === selectedSubElementId
+          ? { ...feature, styles: { ...(feature.styles || {}), ...filteredUpdate } }
+          : feature
+      );
+    } else if (block.type === "stats") {
+      updatedBlock.stats = updatedBlock.stats.map((stat: any) =>
+        stat.id === selectedSubElementId
+          ? { ...stat, styles: { ...(stat.styles || {}), ...filteredUpdate } }
+          : stat
+      );
+    }
+
+    onBlockUpdate(updatedBlock);
+  };
+
   const [titleWidthInput, setTitleWidthInput] = useState<string>(
     String(block?.type === "title" ? (block.width ?? 100) : 100),
   );
@@ -505,7 +636,25 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     value: number,
     side?: "top" | "right" | "bottom" | "left",
   ) => {
-    if (!block || !("padding" in block)) return;
+    if (!block) return;
+
+    if (selectedSubElement) {
+      if (groupPaddingSides && !side) {
+        handleSubElementStyleUpdate({
+          padding: value,
+          paddingTop: undefined,
+          paddingRight: undefined,
+          paddingBottom: undefined,
+          paddingLeft: undefined,
+        });
+      } else if (side) {
+        const sideKey = `padding${side.charAt(0).toUpperCase() + side.slice(1)}`;
+        handleSubElementStyleUpdate({ [sideKey]: value, padding: undefined });
+      }
+      return;
+    }
+
+    if (!("padding" in block)) return;
     if (groupPaddingSides && !side) {
       setPaddingTop(value);
       setPaddingRight(value);
@@ -541,7 +690,25 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     value: number,
     side?: "top" | "right" | "bottom" | "left",
   ) => {
-    if (!block || !("margin" in block)) return;
+    if (!block) return;
+
+    if (selectedSubElement) {
+      if (groupMarginSides && !side) {
+        handleSubElementStyleUpdate({
+          margin: value,
+          marginTop: undefined,
+          marginRight: undefined,
+          marginBottom: undefined,
+          marginLeft: undefined,
+        });
+      } else if (side) {
+        const sideKey = `margin${side.charAt(0).toUpperCase() + side.slice(1)}`;
+        handleSubElementStyleUpdate({ [sideKey]: value, margin: undefined });
+      }
+      return;
+    }
+
+    if (!("margin" in block)) return;
     if (groupMarginSides && !side) {
       setMarginTop(value);
       setMarginRight(value);
@@ -6821,8 +6988,33 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </Button>
       </div>
       <div className="space-y-5">
+        <div className="bg-orange-50 p-3 rounded-lg border border-orange-100 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-orange-700 uppercase tracking-wider">
+              {selectedSubElement ? "Editing Element" : "Editing Section"}
+            </span>
+            {selectedSubElement && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] text-orange-600 hover:text-orange-800 p-0"
+                onClick={() => onSubElementSelect?.(null)}
+              >
+                Reset to Section
+              </Button>
+            )}
+          </div>
+          <p className="text-[11px] text-orange-600 mt-1">
+            {selectedSubElement
+              ? `Now adjusting styling for the selected component.`
+              : "Adjusting styling for the entire card/section."}
+          </p>
+        </div>
         {renderSettings()}
-        <UniversalStyleSettings block={block} onBlockUpdate={onBlockUpdate} />
+        <UniversalStyleSettings
+          block={selectedSubElement ? { ...selectedSubElement, ...(selectedSubElement.styles || {}) } : block}
+          onBlockUpdate={selectedSubElement ? handleSubElementStyleUpdate : onBlockUpdate}
+        />
       </div>
     </div>
   );

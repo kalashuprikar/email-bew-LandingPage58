@@ -8,8 +8,10 @@ import { getPaddingString, getMarginString } from "../utils";
 interface SplitImageCardBlockComponentProps {
   block: SplitImageCardBlock;
   isSelected: boolean;
+  selectedSubElementId?: string | null;
   onBlockUpdate: (block: SplitImageCardBlock) => void;
   onBlockSelect?: (id: string) => void;
+  onSubElementSelect?: (id: string | null) => void;
   blockIndex?: number;
   onDuplicate?: (block: SplitImageCardBlock, position: number) => void;
   onDelete?: (blockId: string) => void;
@@ -56,8 +58,10 @@ export const SplitImageCardBlockComponent: React.FC<
 > = ({
   block,
   isSelected,
+  selectedSubElementId,
   onBlockUpdate,
   onBlockSelect,
+  onSubElementSelect,
   blockIndex = 0,
   onDuplicate,
   onDelete,
@@ -73,6 +77,33 @@ export const SplitImageCardBlockComponent: React.FC<
   const [startWidth, setStartWidth] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Synchronize focusedSection with selectedSubElementId
+  useEffect(() => {
+    if (selectedSubElementId) {
+      setFocusedSection(selectedSubElementId);
+    } else {
+      setFocusedSection(null);
+    }
+  }, [selectedSubElementId]);
+
+  const getSubElementStyles = (subElement: any) => {
+    const styles = subElement.styles;
+    if (!styles) return {};
+    return {
+      padding: getPaddingString(styles),
+      margin: getMarginString(styles),
+      fontSize: styles.fontSize ? `${styles.fontSize}px` : undefined,
+      color: styles.fontColor,
+      backgroundColor: styles.backgroundColor,
+      textAlign: styles.textAlignment,
+      lineHeight: styles.lineHeight,
+      fontWeight: styles.fontWeight,
+      fontStyle: styles.fontStyle,
+      border: styles.borderWidth ? `${styles.borderWidth}px solid ${styles.borderColor || '#000'}` : undefined,
+      borderRadius: styles.borderRadius ? `${styles.borderRadius}px` : undefined,
+    };
+  };
 
   // Initialize sections from old format or arrays
   const titles = useMemo(
@@ -649,21 +680,23 @@ export const SplitImageCardBlockComponent: React.FC<
                             <p
                               onClick={() => {
                                 setEditMode(`title-${title.id}`);
-                                setFocusedSection(`title-${title.id}`);
+                                setFocusedSection(title.id);
+                                onSubElementSelect?.(title.id);
                               }}
                               className="font-bold text-lg text-gray-900 cursor-pointer p-3 rounded transition-all"
                               style={{
                                 border:
-                                  focusedSection === `title-${title.id}`
+                                  focusedSection === title.id
                                     ? "2px solid rgb(255, 106, 0)"
                                     : hoveredSection === `title-${title.id}`
                                       ? "2px dotted rgb(255, 106, 0)"
                                       : "none",
+                                ...getSubElementStyles(title),
                               }}
                             >
                               {title.content}
                             </p>
-                            {focusedSection === `title-${title.id}` && (
+                            {focusedSection === title.id && (
                               <FieldToolbar
                                 fieldId={title.id}
                                 fieldValue={title.content}
@@ -728,22 +761,24 @@ export const SplitImageCardBlockComponent: React.FC<
                             <p
                               onClick={() => {
                                 setEditMode(`description-${desc.id}`);
-                                setFocusedSection(`description-${desc.id}`);
+                                setFocusedSection(desc.id);
+                                onSubElementSelect?.(desc.id);
                               }}
                               className="text-sm text-gray-600 cursor-pointer p-3 rounded whitespace-pre-line transition-all"
                               style={{
                                 border:
-                                  focusedSection === `description-${desc.id}`
+                                  focusedSection === desc.id
                                     ? "2px solid rgb(255, 106, 0)"
                                     : hoveredSection ===
                                         `description-${desc.id}`
                                       ? "2px dotted rgb(255, 106, 0)"
                                       : "none",
+                                ...getSubElementStyles(desc),
                               }}
                             >
                               {desc.content}
                             </p>
-                            {focusedSection === `description-${desc.id}` && (
+                            {focusedSection === desc.id && (
                               <FieldToolbar
                                 fieldId={desc.id}
                                 fieldValue={desc.content}
@@ -829,16 +864,18 @@ export const SplitImageCardBlockComponent: React.FC<
                             <button
                               onClick={() => {
                                 setEditMode(`button-text-${btn.id}`);
-                                setFocusedSection(`button-${btn.id}`);
+                                setFocusedSection(btn.id);
+                                onSubElementSelect?.(btn.id);
                               }}
                               className="py-2 px-4 bg-valasys-orange text-white rounded text-sm font-bold hover:bg-orange-600 cursor-pointer transition-all"
                               style={{
                                 border:
-                                  focusedSection === `button-${btn.id}`
+                                  focusedSection === btn.id
                                     ? "2px solid white"
                                     : hoveredSection === `button-${btn.id}`
                                       ? "2px dotted white"
                                       : "none",
+                                ...getSubElementStyles(btn),
                               }}
                             >
                               {btn.text}
@@ -846,6 +883,13 @@ export const SplitImageCardBlockComponent: React.FC<
                             <div className="text-xs text-gray-500 mt-1 p-2">
                               Link: {btn.link || "#"}
                             </div>
+                            {focusedSection === btn.id && (
+                              <SectionToolbar
+                                onAdd={handleAddButton}
+                                onCopy={() => handleDuplicateButton(btn.id)}
+                                onDelete={() => handleDeleteButton(btn.id)}
+                              />
+                            )}
                           </div>
                         )}
                       </div>

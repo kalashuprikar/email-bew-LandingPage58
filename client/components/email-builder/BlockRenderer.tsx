@@ -250,8 +250,10 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           <CenteredImageCardBlockComponent
             block={block as any}
             isSelected={isSelected}
+            selectedSubElementId={selectedSubElementId}
             onBlockUpdate={(updatedBlock) => onBlockUpdate(updatedBlock)}
             onBlockSelect={onBlockSelect}
+            onSubElementSelect={onSubElementSelect}
             blockIndex={blockIndex}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
@@ -264,8 +266,10 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           <SplitImageCardBlockComponent
             block={block as any}
             isSelected={isSelected}
+            selectedSubElementId={selectedSubElementId}
             onBlockUpdate={(updatedBlock) => onBlockUpdate(updatedBlock)}
             onBlockSelect={onBlockSelect}
+            onSubElementSelect={onSubElementSelect}
             blockIndex={blockIndex}
             onDuplicate={onDuplicate}
             onDelete={onDelete}

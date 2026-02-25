@@ -463,9 +463,9 @@ export interface CenteredImageCardBlock {
   buttonText: string;
   buttonLink: string;
   buttonLinkType?: "url" | "page" | "email";
-  titles?: Array<{ id: string; content: string }>;
-  descriptions?: Array<{ id: string; content: string }>;
-  buttons?: Array<{ id: string; text: string; link: string }>;
+  titles?: Array<{ id: string; content: string; styles?: TextElementStyles }>;
+  descriptions?: Array<{ id: string; content: string; styles?: TextElementStyles }>;
+  buttons?: Array<{ id: string; text: string; link: string; styles?: TextElementStyles }>;
   backgroundColor: string;
   borderColor: string;
   borderWidth: number;
@@ -489,9 +489,9 @@ export interface SplitImageCardBlock {
   buttonText: string;
   buttonLink: string;
   buttonLinkType?: "url" | "page" | "email";
-  titles?: Array<{ id: string; content: string }>;
-  descriptions?: Array<{ id: string; content: string }>;
-  buttons?: Array<{ id: string; text: string; link: string }>;
+  titles?: Array<{ id: string; content: string; styles?: TextElementStyles }>;
+  descriptions?: Array<{ id: string; content: string; styles?: TextElementStyles }>;
+  buttons?: Array<{ id: string; text: string; link: string; styles?: TextElementStyles }>;
   width?: number;
   height?: number;
   imagePosition: "left" | "right";
@@ -516,8 +516,8 @@ export interface TwoColumnCardBlock {
     imageHeight?: number;
     imageLink?: string;
     imageLinkType?: "url" | "page" | "email";
-    titles?: { id: string; content: string }[];
-    descriptions?: { id: string; content: string }[];
+    titles?: { id: string; content: string; styles?: TextElementStyles }[];
+    descriptions?: { id: string; content: string; styles?: TextElementStyles }[];
     title?: string; // Legacy support
     description?: string; // Legacy support
     button?: {
@@ -548,8 +548,8 @@ export interface StatsBlock {
     id: string;
     value: string;
     label: string;
-    values?: { id: string; content: string }[];
-    labels?: { id: string; content: string }[];
+    values?: { id: string; content: string; styles?: TextElementStyles }[];
+    labels?: { id: string; content: string; styles?: TextElementStyles }[];
     fontSize: number;
     labelFontSize: number;
     textColor: string;
@@ -568,9 +568,9 @@ export interface FeaturesBlock {
     icon: string;
     title: string;
     description: string;
-    icons?: { id: string; content: string }[];
-    titles?: { id: string; content: string }[];
-    descriptions?: { id: string; content: string }[];
+    icons?: { id: string; content: string; styles?: TextElementStyles }[];
+    titles?: { id: string; content: string; styles?: TextElementStyles }[];
+    descriptions?: { id: string; content: string; styles?: TextElementStyles }[];
     fontSize: number;
     titleFontSize: number;
     textColor: string;
