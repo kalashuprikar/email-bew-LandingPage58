@@ -22,6 +22,7 @@ import { BlocksPanel } from "./BlocksPanel";
 import { SectionsPanel } from "./SectionsPanel";
 import { LandingPageSettingsPanel } from "./LandingPageSettingsPanel";
 import { LandingPagePreviewMode } from "./LandingPagePreviewMode";
+import { ElementContentPanel } from "./ElementContentPanel";
 
 interface LandingPageBuilderProps {
   pageId?: string;
@@ -202,6 +203,29 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
     }
   };
 
+  const handleSaveAndExit = async () => {
+    if (!page) return;
+
+    setIsSaving(true);
+    try {
+      const updatedPage = {
+        ...page,
+        name: pageName,
+        updatedAt: new Date().toISOString(),
+      };
+      saveLandingPageToLocalStorage(updatedPage);
+      setPage(updatedPage);
+      // Redirect back to templates list after save
+      setTimeout(() => {
+        setIsSaving(false);
+        onBack();
+      }, 500);
+    } catch (error) {
+      console.error("Error saving landing page:", error);
+      setIsSaving(false);
+    }
+  };
+
   if (!page) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -286,10 +310,19 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-valasys-orange hover:bg-orange-600"
+              variant="outline"
+              size="sm"
             >
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? "Saving..." : "Save"}
+            </Button>
+            <Button
+              onClick={handleSaveAndExit}
+              disabled={isSaving}
+              className="bg-valasys-orange hover:bg-orange-600"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? "Saving..." : "Save & exit"}
             </Button>
           </div>
         </div>
@@ -304,6 +337,8 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
               onSelectBlock={(blockId) => {
                 setSelectedBlockId(blockId);
                 setSelectedElement(null);
+                setSelectedLinkIndex(null);
+                setSelectedLinkType(null);
               }}
               onElementSelect={setSelectedElement}
               onUpdateBlock={handleUpdateBlock}
@@ -323,24 +358,36 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
         </div>
       </div>
 
-      {/* Right Sidebar - Settings Panel */}
+      {/* Right Sidebar - Settings or Content Panel */}
       <div className="w-96 bg-white border-l border-gray-200 overflow-hidden flex flex-col">
-        <LandingPageSettingsPanel
-          block={selectedBlock}
-          blockId={selectedBlockId || undefined}
-          selectedElement={selectedElement}
-          onElementSelect={setSelectedElement}
-          onBlockUpdate={handleUpdateBlock}
-          onBlockDelete={
-            selectedBlockId ? () => handleDeleteBlock(selectedBlockId) : undefined
-          }
-          selectedLinkIndex={selectedLinkIndex}
-          selectedLinkType={selectedLinkType}
-          onLinkSelect={(index, type) => {
-            setSelectedLinkIndex(index);
-            setSelectedLinkType(type);
-          }}
-        />
+        {selectedElement ? (
+          <ElementContentPanel
+            block={selectedBlock}
+            selectedElement={selectedElement}
+            onElementSelect={() => {
+              setSelectedElement(null);
+            }}
+            onBlockUpdate={handleUpdateBlock}
+            blockId={selectedBlockId || undefined}
+          />
+        ) : (
+          <LandingPageSettingsPanel
+            block={selectedBlock}
+            blockId={selectedBlockId || undefined}
+            selectedElement={selectedElement}
+            onElementSelect={setSelectedElement}
+            onBlockUpdate={handleUpdateBlock}
+            onBlockDelete={
+              selectedBlockId ? () => handleDeleteBlock(selectedBlockId) : undefined
+            }
+            selectedLinkIndex={selectedLinkIndex}
+            selectedLinkType={selectedLinkType}
+            onLinkSelect={(index, type) => {
+              setSelectedLinkIndex(index);
+              setSelectedLinkType(type);
+            }}
+          />
+        )}
       </div>
     </div>
     </DndProvider>
