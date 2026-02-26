@@ -249,7 +249,7 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({
 
   return (
     <DndProvider backend={HTML5Backend}>
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 origin-top-left" style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%', height: '125%' }}>
       {/* Left Sidebar - Blocks Panel */}
       <div className="w-[450px] bg-white border-r border-gray-200 overflow-hidden flex flex-col">
         <div className="sticky top-0 z-20 bg-white border-b border-gray-200 p-4">
