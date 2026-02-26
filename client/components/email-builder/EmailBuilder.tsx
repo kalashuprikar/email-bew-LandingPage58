@@ -273,8 +273,8 @@ ${htmlContent.substring(htmlContent.indexOf('<div style="max-width:'), htmlConte
   }, []);
 
   return (
-    <div className="email-builder-page" style={{ overflow: "visible", width: "100%" }}>
-      <DashboardLayout>
+    <DashboardLayout noPadding>
+      <div className="email-builder-page" style={{ overflow: "visible", width: "100%" }}>
         <DndProvider backend={HTML5Backend}>
           <div className="flex flex-col h-[calc(100vh-120px)] bg-gray-50">
             {/* Top Header */}
@@ -563,7 +563,7 @@ ${htmlContent.substring(htmlContent.indexOf('<div style="max-width:'), htmlConte
           </DialogContent>
         </Dialog>
       </DndProvider>
+      </div>
     </DashboardLayout>
-    </div>
   );
 };

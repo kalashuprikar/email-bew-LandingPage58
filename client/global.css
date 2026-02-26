@@ -102,12 +102,24 @@
   /* Email Builder - 80% scale */
   .email-builder-page {
     zoom: 0.8;
-    min-height: 100vh;
+    min-height: 125vh; /* fill viewport at 0.8 zoom */
+    width: 125%; /* fill container at 0.8 zoom */
   }
 
   .email-builder-page main {
     overflow: visible !important;
     min-height: 100%;
+  }
+
+  /* Support for svh units used in components */
+  .h-svh {
+    height: 100svh;
+  }
+  .min-h-svh {
+    min-height: 100svh;
+  }
+  .h-svh-minus-header {
+    height: calc(100svh - theme(spacing.16));
   }
 
   /* Custom animations for charts */

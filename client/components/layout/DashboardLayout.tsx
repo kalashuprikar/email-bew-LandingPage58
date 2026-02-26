@@ -70,6 +70,7 @@ import MasteryProgressBadge from "@/components/layout/MasteryProgressBadge";
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  noPadding?: boolean;
 }
 
 // Core navigation items for the middle section
@@ -157,7 +158,10 @@ const utilityItems = [
   },
 ];
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  noPadding = false,
+}: DashboardLayoutProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Start with sidebar closed on mobile
   const [unreadNotifications] = useState(3); // Mock unread count
@@ -803,14 +807,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
       >
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-valasys-gray-200 sticky top-0 z-40 pt-2 sm:pt-4 lg:pt-10">
+        <header className="bg-white shadow-sm border-b border-valasys-gray-200 sticky top-0 z-40 pt-11">
           <TrialBanner
             className="fixed inset-x-0 top-0 z-[60]"
             daysUsed={5}
             totalDays={10}
             endAt={new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)}
           />
-          <div className="px-4 lg:px-6 py-4 relative">
+          <div className="px-4 lg:px-6 pb-4 pt-2 relative">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 {/* Mobile Menu Button */}
@@ -1206,7 +1210,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Main Content */}
-        <main className="relative flex-1 p-6 overflow-auto">{children}</main>
+        <main
+          className={cn("relative flex-1 overflow-auto", !noPadding && "p-6")}
+        >
+          {children}
+        </main>
       </div>
 
       {/* Manage Users Text Portal (renders outside sidebar) */}
