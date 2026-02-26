@@ -395,7 +395,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-valasys-gray-50 flex">
+    <div className="h-screen bg-valasys-gray-50 flex">
       {/* Mobile Backdrop */}
       {isExpanded && (
         <div
